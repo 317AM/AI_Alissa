@@ -1,0 +1,11 @@
+{
+  "MaxConversationLength": 500,
+  "SummaryDivisionFactor": 10,
+  "MaxMessageLength": 2000,
+  
+  "Memory": {
+    "MaxShortTermEntries": 20,
+    "MaxLongTermEntries": 500,
+    "SummaryDivisionFactor": 10
+  }
+}

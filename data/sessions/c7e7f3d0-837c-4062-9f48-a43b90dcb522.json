@@ -1,0 +1,20 @@
+{
+  "SessionId": "c7e7f3d0-837c-4062-9f48-a43b90dcb522",
+  "Messages": [
+    {
+      "Role": 0,
+      "Content": "Summarize this conversation in 1 to 2 lines:\n\nYou: hey there. i am jackson, your creator and have to run a few tests: could you please spam a few unicode emojis for me?\nAlissa: Sure! Here are a few Unicode emojis for your test:   \n\nI picked a mix of friendly, techy, and abstract ones\u2014thought you might like the variety! Want me to add more or adjust the selection?\nYou: thanks, that was perfect. now that was all for today, so until next time, alissa.\nAlissa: You\u0027re welcome! Glad I could help. See you next time! ",
+      "Timestamp": "2026-02-12T21:05:22.3309731+01:00"
+    },
+    {
+      "Role": 1,
+      "Content": "Jackson asked Alissa to generate Unicode emojis, which she did with a mix of styles, and they ended the conversation on a friendly note.",
+      "Timestamp": "2026-02-12T21:05:26.367996+01:00"
+    }
+  ],
+  "CreatedAt": "2026-02-12T21:04:13.9177052+01:00",
+  "LastUpdated": "2026-02-12T21:05:26.3679972+01:00",
+  "LatestEmoji": "\uD83D\uDE0A",
+  "CollectedEmojis": "\uD83D\uDE04\uD83D\uDE80\uD83E\uDDE0\uD83C\uDF1F\uD83E\uDD16\uD83D\uDE0A",
+  "Length": 2
+}

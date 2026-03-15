@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/core/">
+    <Project Path="core/Alissa.Core.csproj" />
+  </Folder>
+  <Folder Name="/main/">
+    <Project Path="main/Alissa.Main.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Alissa.Tests.csproj" />
+  </Folder>
+</Solution>

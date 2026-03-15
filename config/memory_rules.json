@@ -1,0 +1,6 @@
+{
+  "maxShortTermEntries": 20,
+  "maxLongTermEntries": 200,
+  "importanceThreshold": 0.6,
+  "compressionFactor": 0.4
+}

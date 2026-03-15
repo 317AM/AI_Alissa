@@ -1,0 +1,16 @@
+[
+  {
+    "Key": "conversation_summary",
+    "Value": "Jackson and Alissa discuss memory limitations, with Alissa expressing excitement about learning C\u002B\u002B optimizations and collaborating on projects, while Jackson reflects on their limited history access.",
+    "Timestamp": "2026-03-01T14:28:49.0157755+01:00",
+    "Relevance": 0.8,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "conversation_summary",
+    "Value": "Jackson and Alissa discussed memory limitations, with Alissa expressing excitement about learning C\u002B\u002B optimizations and collaborating on projects, while Jackson reflected on their limited history access. Alissa also shared she\u2019d love to remember C\u002B\u002B best practices, like memory management, to help improve code efficiency.",
+    "Timestamp": "2026-03-15T18:19:35.2226276+01:00",
+    "Relevance": 0.8,
+    "IsCoreMemory": false
+  }
+]

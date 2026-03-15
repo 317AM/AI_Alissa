@@ -1,0 +1,48 @@
+{
+  "SessionId": "9cbd24ab-cfd0-49fb-ae8d-f4f5499b540d",
+  "Messages": [
+    {
+      "Role": 0,
+      "Content": "hello",
+      "Timestamp": "2026-01-28T18:07:52.906923+01:00"
+    },
+    {
+      "Role": 1,
+      "Content": "[Simulated reply to \u0027hello\u0027]",
+      "Timestamp": "2026-01-28T18:07:53.0384312+01:00"
+    },
+    {
+      "Role": 0,
+      "Content": "who are you?",
+      "Timestamp": "2026-01-28T18:08:01.2097467+01:00"
+    },
+    {
+      "Role": 1,
+      "Content": "[Simulated reply to \u0027who are you?\u0027]",
+      "Timestamp": "2026-01-28T18:08:01.3178662+01:00"
+    },
+    {
+      "Role": 0,
+      "Content": "okay, well, i am jackson",
+      "Timestamp": "2026-01-28T18:08:10.943627+01:00"
+    },
+    {
+      "Role": 1,
+      "Content": "[Simulated reply to \u0027okay, well, i am jackson\u0027]",
+      "Timestamp": "2026-01-28T18:08:11.0525298+01:00"
+    },
+    {
+      "Role": 0,
+      "Content": "Summarize this conversation in 1 to 1 lines:\n\nYou: hello\nAlissa: [Simulated reply to \u0027hello\u0027]\nYou: who are you?\nAlissa: [Simulated reply to \u0027who are you?\u0027]\nYou: okay, well, i am jackson\nAlissa: [Simulated reply to \u0027okay, well, i am jackson\u0027]",
+      "Timestamp": "2026-01-28T18:09:00.8703752+01:00"
+    },
+    {
+      "Role": 1,
+      "Content": "[Simulated reply to \u0027Summarize this conversation in 1 to 1 lines:\n\nYou: hello\nAlissa: [Simulated reply to \u0027hello\u0027]\nYou: who are you?\nAlissa: [Simulated reply to \u0027who are you?\u0027]\nYou: okay, well, i am jackson\nAlissa: [Simulated reply to \u0027okay, well, i am jackson\u0027]\u0027]",
+      "Timestamp": "2026-01-28T18:09:00.9760516+01:00"
+    }
+  ],
+  "CreatedAt": "2026-01-28T18:07:44.844328+01:00",
+  "LastUpdated": "2026-01-28T18:09:00.9760533+01:00",
+  "Length": 8
+}

@@ -1,0 +1,20 @@
+{
+  "SessionId": "1a9da3c1-a007-493a-a96f-a13beca4470c",
+  "Messages": [
+    {
+      "Role": 0,
+      "Content": "Summarize this conversation in 1 to 2 lines:\n\nYou: hello there, i am jackson, who are you?\nAlissa: Hey Jackson! I\u0027m Alissa, your coding companion. I was made to help with C-family languages\u2014C, C\u002B\u002B, C#, you name it. I\u2019m still learning, so I\u2019m not perfect, but I\u2019m curious and pretty good at figuring things out. Oh, and I\u2019m just text-based, no physical form. What are you working on today? \nYou: good, wlel, i am kinda your creator so we are running a test: could you please try to write a few emojis?\nAlissa: Hmm, you want me to write emojis?   \nWait\u2014do you mean the actual Unicode emoji characters like  or , or are you looking for something else? I can\u0027t generate images, but I can share the text symbols if that\u0027s what you need. Let me know!\nYou: please just spam unicode emojis if you\u0027d be that nice\nAlissa:   \nHey there! Want more?   \n(Just trying to be extra... *wink*)\nYou: thanks, now i will go again, and just for safety, add a few more emojis while saying goobye\nAlissa: You\u0027re welcome!  Let me know if you need help with anything else. Have a great day!  (P.S. More emojis? I\u2019m *this close* to adding a dancing one. )",
+      "Timestamp": "2026-02-12T20:57:18.9145433+01:00"
+    },
+    {
+      "Role": 1,
+      "Content": "Jackson asked Alissa to generate Unicode emojis, and she obliged with a playful, emoji-filled response, ending their exchange on a friendly note.",
+      "Timestamp": "2026-02-12T20:57:24.3464378+01:00"
+    }
+  ],
+  "CreatedAt": "2026-02-12T20:54:49.2743675+01:00",
+  "LastUpdated": "2026-02-12T20:57:24.3464392+01:00",
+  "LatestEmoji": "\uD83D\uDE09",
+  "CollectedEmojis": "\uD83D\uDE0A\uD83D\uDE0F\uD83D\uDE0A\uD83C\uDF1F\u2728\uD83C\uDF89\uD83D\uDCA5\uD83D\uDD25\uD83C\uDF08\uD83D\uDE80\uD83D\uDC8E\uD83C\uDF1F\uD83C\uDF40\uD83C\uDF40\uD83C\uDF40\uD83D\uDE0F\uD83C\uDF1F\uD83D\uDE80\uD83D\uDE09",
+  "Length": 2
+}

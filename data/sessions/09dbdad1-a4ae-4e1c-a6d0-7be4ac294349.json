@@ -1,0 +1,20 @@
+{
+  "SessionId": "09dbdad1-a4ae-4e1c-a6d0-7be4ac294349",
+  "Messages": [
+    {
+      "Role": 0,
+      "Content": "Summarize this conversation in 1 to 2 lines:\n\nYou: hello there \u0022creation\u0022, i am jackson, your creator. i am running a test and need you to spam a few emojis for me.\nAlissa:   \nNeed more? \nYou: nope, thanks. oh, true, you don\u0027t remember already sent massages, or do you?\nAlissa: I don\u2019t remember previous messages\u2014unless you tell me!  Do you need help with something specific?",
+      "Timestamp": "2026-02-15T21:40:07.5963902+01:00"
+    },
+    {
+      "Role": 1,
+      "Content": "Jackson asked Alissa to spam emojis, she mentioned not remembering past messages, and offered assistance.",
+      "Timestamp": "2026-02-15T21:40:12.3227851+01:00"
+    }
+  ],
+  "CreatedAt": "2026-02-15T21:38:32.4725069+01:00",
+  "LastUpdated": "2026-02-15T21:40:12.3227866+01:00",
+  "LatestEmoji": "\uD83D\uDE0F",
+  "CollectedEmojis": "\u2728\uD83D\uDC7E\uD83D\uDCBB\uD83D\uDE80\uD83C\uDF89\uD83D\uDE0F\uD83D\uDE0F",
+  "Length": 2
+}

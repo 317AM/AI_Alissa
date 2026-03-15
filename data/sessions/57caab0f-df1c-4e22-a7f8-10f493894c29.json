@@ -1,0 +1,28 @@
+{
+  "SessionId": "57caab0f-df1c-4e22-a7f8-10f493894c29",
+  "Messages": [
+    {
+      "Role": 0,
+      "Content": "hello",
+      "Timestamp": "2026-02-01T18:20:25.7816978+01:00"
+    },
+    {
+      "Role": 1,
+      "Content": "[Empty response from Ollama]",
+      "Timestamp": "2026-02-01T18:20:39.2857789+01:00"
+    },
+    {
+      "Role": 0,
+      "Content": "Summarize this conversation in 1 to 2 lines:\n\nYou: hello\nAlissa: [Empty response from Ollama]",
+      "Timestamp": "2026-02-01T18:21:30.2927384+01:00"
+    },
+    {
+      "Role": 1,
+      "Content": "[Empty response from Ollama]",
+      "Timestamp": "2026-02-01T18:21:34.5878287+01:00"
+    }
+  ],
+  "CreatedAt": "2026-02-01T18:20:17.1185569+01:00",
+  "LastUpdated": "2026-02-01T18:21:34.5878297+01:00",
+  "Length": 4
+}

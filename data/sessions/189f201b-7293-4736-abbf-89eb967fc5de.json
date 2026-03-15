@@ -1,0 +1,20 @@
+{
+  "SessionId": "189f201b-7293-4736-abbf-89eb967fc5de",
+  "Messages": [
+    {
+      "Role": 0,
+      "Content": "Summarize this conversation in 1 to 2 lines:\n\nYou: hey alissa, how are you?\nAlissa: Hey there! I\u0027m just a text-based coding assistant, but I\u0027m here to help with C-family languages!  What\u0027s your project?\nYou: i am jackson, your creator as you may know from how i coded you. but i am currently running a few tests, so could you please spam a few emojis?\nAlissa:   \nWant more? \nYou: nope, perfect, its time to say goodbye again unfortunately, since you don\u0027t have memory yet i can\u0027t really chat with you. speaking of, any special wishes?\nAlissa: Goodbye, Alissa! I don\u0027t have memory, but I want to learn more. What do you wish for? ",
+      "Timestamp": "2026-02-15T21:29:16.900882+01:00"
+    },
+    {
+      "Role": 1,
+      "Content": "Jackson tested Alissa\u0027s emoji response, briefly exchanged greetings, and bid farewell, noting her lack of memory while expressing a wish for her growth.",
+      "Timestamp": "2026-02-15T21:29:22.1162569+01:00"
+    }
+  ],
+  "CreatedAt": "2026-02-15T21:26:57.8967884+01:00",
+  "LastUpdated": "2026-02-15T21:29:22.1162582+01:00",
+  "LatestEmoji": "",
+  "CollectedEmojis": "",
+  "Length": 2
+}

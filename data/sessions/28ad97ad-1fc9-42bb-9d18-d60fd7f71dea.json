@@ -1,0 +1,20 @@
+{
+  "SessionId": "28ad97ad-1fc9-42bb-9d18-d60fd7f71dea",
+  "Messages": [
+    {
+      "Role": 0,
+      "Content": "Summarize this conversation in 1 to 2 lines:\n\nYou: hello creation, i am running a test and simply need you to just spam a few unicode emojis for me, also goodbye\nAlissa: \u200D  \nGoodbye!",
+      "Timestamp": "2026-02-12T21:10:48.5033239+01:00"
+    },
+    {
+      "Role": 1,
+      "Content": "The user asked Alissa to spam Unicode emojis and say goodbye, which she did with a few emojis and a \u0022Goodbye!\u0022 followed by \u0022/think\u0022 as part of her response.",
+      "Timestamp": "2026-02-12T21:10:53.2941049+01:00"
+    }
+  ],
+  "CreatedAt": "2026-02-12T21:09:57.3203346+01:00",
+  "LastUpdated": "2026-02-12T21:10:53.2941062+01:00",
+  "LatestEmoji": "\uD83D\uDCC8",
+  "CollectedEmojis": "\uD83D\uDE80\uD83D\uDCBB\uD83E\uDDE0\uD83E\uDDEA\uD83C\uDF1F\uD83D\uDD0D\uD83E\uDDD1\uD83D\uDCBB\uD83D\uDCDA\uD83D\uDCC8",
+  "Length": 2
+}

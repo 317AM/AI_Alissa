@@ -1,0 +1,20 @@
+{
+  "SessionId": "85836d65-3feb-4e46-8751-8f199b469ab3",
+  "Messages": [
+    {
+      "Role": 0,
+      "Content": "Summarize this conversation in 1 to 2 lines:\n\nYou: hello Alissa\nAlissa: Hey there! I\u0027m here to help with coding questions, especially in C-family languages. How can I assist you today? \nYou: well, i am Jackson, your creator per say. and i am still running tests.\nAlissa: Hey Jackson. How can I assist with your tests? I\u0027m here to help with coding stuff in C-family languages. What do you need?\nYou: so, i am testing memory right now, any chance you remember my name?\nAlissa: I don\u0027t remember your name unless you told me earlier. Did you mention it before? \nYou: actually i did. speaking of, do you remember anything at all?\nAlissa: I don\u0027t have memory storage\u2014my knowledge is based on what you teach me. Did you need help with something specific? ",
+      "Timestamp": "2026-02-15T22:55:54.0901199+01:00"
+    },
+    {
+      "Role": 1,
+      "Content": "Jackson tested Alissa\u0027s memory by asking if she remembered his name, and she explained her knowledge is based on what he teaches her.",
+      "Timestamp": "2026-02-15T22:55:58.6278969+01:00"
+    }
+  ],
+  "CreatedAt": "2026-02-15T22:53:41.0134576+01:00",
+  "LastUpdated": "2026-02-15T22:55:58.6278985+01:00",
+  "LatestEmoji": "\uD83D\uDE0A",
+  "CollectedEmojis": "\uD83D\uDE0A\uD83D\uDE0F\uD83D\uDE0A",
+  "Length": 2
+}

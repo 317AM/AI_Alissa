@@ -1,0 +1,17 @@
+{
+  "maxPromptTokens": 4096,
+  "maxSessionMessages": 10,
+  "maxMemoryEntries": 15,
+  "trimPriority": [
+    "Identity",
+    "UserProfile",
+    "Facts",
+    "RecentContext",
+    "Skills",
+    "SystemLearnings",
+    "SessionCache"
+  ],
+  "includeMediumTermMemory": false,
+  "includePersonaFields": true,
+  "tokensPerLine": 4
+}

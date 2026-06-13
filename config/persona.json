@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "createdUtc": "2024-01-01T00:00:00Z",
+  "updatedUtc": "2024-01-01T00:00:00Z",
+  "current_user": {
+    "name": "",
+    "preferences": [],
+    "known_info": {}
+  },
+  "appearance": {
+    "description": "",
+    "mood": "",
+    "attributes": {}
+  },
+  "current_code": {
+    "name": "",
+    "language": "",
+    "task": "",
+    "snippet": "",
+    "related_concepts": []
+  },
+  "custom_fields": {}
+}

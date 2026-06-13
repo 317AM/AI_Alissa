@@ -1,0 +1,12 @@
+{
+  "rebuildOnAccess": true,
+  "usePartialIndexing": true,
+  "applyForgetfulness": true,
+  "decayAfterDays": 7,
+  "decayRatePerDay": 0.05,
+  "forgettingThreshold": 0.1,
+  "indexingFilters": [],
+  "maxIndexSize": 500,
+  "useHeuristicScoring": true,
+  "accessCountForConsolidation": 3
+}

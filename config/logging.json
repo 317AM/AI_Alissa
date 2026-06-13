@@ -1,0 +1,11 @@
+{
+  "enableConversationLogs": true,
+  "enableSummaryLogs": true,
+  "enableMemoryLogs": true,
+  "enableDebugLogs": false,
+  "enablePromptLogs": false,
+  "logsDirectory": "logs",
+  "minLogLevel": "Info",
+  "maxLogFileSizeMb": 10,
+  "logFormat": "Simple"
+}

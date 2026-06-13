@@ -22,15 +22,21 @@ namespace Alissa.Core.Interfaces
         void SaveSystemLearning(MemoryEntry entry);
         List<MemoryEntry> LoadSystemLearnings();
 
-        // Conversation summary (root)
-        void SaveConversationSummary(string summary);
+        // Conversation summaries
+        void SaveConversationSummary(ConversationSummary summary);
+        List<ConversationSummary> LoadConversationSummaries();
 
         // General memory operations
         void SaveMemory(MemoryEntry entry);
         List<MemoryEntry> LoadMemory(string key = "");
+        List<MemoryEntry> GetRelevantMemory(int maxEntries);
         List<MemoryEntry> LoadTopMemories(int count = 10);
         List<MemoryEntry> LoadContextMemory(int maxEntries, bool includeCore = true);
         void DeleteMemory(string key);
         void SummarizeMemory();
+        // Skills (long-term)
+        void SaveSkill(MemoryEntry entry);
+        List<MemoryEntry> LoadSkills();
     }
 }
+

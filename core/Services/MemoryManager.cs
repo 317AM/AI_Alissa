@@ -3,186 +3,126 @@ using Alissa.Core.Models;
 using Alissa.Core.Memory;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 
 namespace Alissa.Core.Services
 {
     public class MemoryManager : IMemoryManager
     {
-        private readonly string _memoryDir;
-        private readonly string _shortTermDir;
-        private readonly string _longTermDir;
-        private readonly string _embeddingsDir;
-
+        private readonly MemoryStore _store;
         private readonly MemoryScorer _scorer;
         private readonly MemoryCompressor _compressor;
         private readonly MemoryIndexer _indexer;
 
         public MemoryManager(string basePath, MemoryModel memoryConfig)
         {
-            _memoryDir = Path.Combine(basePath, "memory");
-            _shortTermDir = Path.Combine(_memoryDir, "short_term");
-            _longTermDir = Path.Combine(_memoryDir, "long_term");
-            _embeddingsDir = Path.Combine(_memoryDir, "embeddings");
-
-            Directory.CreateDirectory(_shortTermDir);
-            Directory.CreateDirectory(_longTermDir);
-            Directory.CreateDirectory(_embeddingsDir);
-
+            _store = new MemoryStore(basePath);
             _scorer = new MemoryScorer(memoryConfig);
             _compressor = new MemoryCompressor(memoryConfig);
             _indexer = new MemoryIndexer(memoryConfig);
         }
 
+        // Session Cache Operations
         public void SaveSessionCache(List<Message> messages)
         {
-            string filePath = Path.Combine(_shortTermDir, "session_cache.json");
-            string json = JsonSerializer.Serialize(messages, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(filePath, json);
+            _store.SaveSessionCache(messages);
         }
 
         public List<Message> LoadSessionCache()
         {
-            string filePath = Path.Combine(_shortTermDir, "session_cache.json");
-            if (!File.Exists(filePath))
-                return new List<Message>();
+            return _store.LoadSessionCache();
+        }
 
-            try
+        // Fact Operations
+        public void SaveMemory(MemoryEntry entry)
+        {
+            var facts = _store.LoadFacts();
+            if (!facts.Any(f => f.Key == entry.Key && f.Value == entry.Value))
             {
-                string json = File.ReadAllText(filePath);
-                return JsonSerializer.Deserialize<List<Message>>(json) ?? new List<Message>();
+                facts.Add(entry);
             }
-            catch
-            {
-                return new List<Message>();
-            }
+            _store.SaveFacts(facts);
         }
 
         public void SaveFact(MemoryEntry entry)
         {
-            string filePath = Path.Combine(_longTermDir, "facts.json");
-            List<MemoryEntry> facts = LoadFacts();
-
-            bool exists = facts.Any(e => e.Key == entry.Key && e.Value == entry.Value);
-            if (!exists)
-                facts.Add(entry);
-            else
-            {
-                int idx = facts.FindIndex(e => e.Key == entry.Key && e.Value == entry.Value);
-                if (idx >= 0)
-                    facts[idx] = entry;
-            }
-
-            string json = JsonSerializer.Serialize(facts, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(filePath, json);
+            SaveMemory(entry);
         }
 
         public List<MemoryEntry> LoadFacts()
         {
-            string filePath = Path.Combine(_longTermDir, "facts.json");
-            if (!File.Exists(filePath))
-                return new List<MemoryEntry>();
-
-            try
-            {
-                string json = File.ReadAllText(filePath);
-                return JsonSerializer.Deserialize<List<MemoryEntry>>(json) ?? new List<MemoryEntry>();
-            }
-            catch
-            {
-                return new List<MemoryEntry>();
-            }
+            return _store.LoadFacts();
         }
 
+        // User Profile Operations
         public void SaveUserProfile(MemoryEntry entry)
         {
-            string filePath = Path.Combine(_longTermDir, "user_profile.json");
-            List<MemoryEntry> profile = LoadUserProfile();
-
-            var existing = profile.FirstOrDefault(e => e.Key == entry.Key);
+            var profile = _store.LoadUserProfile();
+            var existing = profile.FirstOrDefault(p => p.Key == entry.Key);
             if (existing != null)
-            {
                 profile.Remove(existing);
-            }
             profile.Add(entry);
-
-            string json = JsonSerializer.Serialize(profile, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(filePath, json);
+            _store.SaveUserProfile(profile);
         }
 
         public List<MemoryEntry> LoadUserProfile()
         {
-            string filePath = Path.Combine(_longTermDir, "user_profile.json");
-            if (!File.Exists(filePath))
-                return new List<MemoryEntry>();
-
-            try
-            {
-                string json = File.ReadAllText(filePath);
-                return JsonSerializer.Deserialize<List<MemoryEntry>>(json) ?? new List<MemoryEntry>();
-            }
-            catch
-            {
-                return new List<MemoryEntry>();
-            }
+            return _store.LoadUserProfile();
         }
 
+        // System Learning Operations
         public void SaveSystemLearning(MemoryEntry entry)
         {
-            string filePath = Path.Combine(_longTermDir, "system_learnings.json");
-            List<MemoryEntry> learnings = LoadSystemLearnings();
-
-            bool exists = learnings.Any(e => e.Key == entry.Key && e.Value == entry.Value);
-            if (!exists)
+            var learnings = _store.LoadSystemLearnings();
+            if (!learnings.Any(l => l.Key == entry.Key && l.Value == entry.Value))
+            {
                 learnings.Add(entry);
-
-            string json = JsonSerializer.Serialize(learnings, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(filePath, json);
+            }
+            _store.SaveSystemLearnings(learnings);
         }
 
         public List<MemoryEntry> LoadSystemLearnings()
         {
-            string filePath = Path.Combine(_longTermDir, "system_learnings.json");
-            if (!File.Exists(filePath))
-                return new List<MemoryEntry>();
-
-            try
-            {
-                string json = File.ReadAllText(filePath);
-                return JsonSerializer.Deserialize<List<MemoryEntry>>(json) ?? new List<MemoryEntry>();
-            }
-            catch
-            {
-                return new List<MemoryEntry>();
-            }
+            return _store.LoadSystemLearnings();
         }
 
-        public void SaveConversationSummary(string summary)
+        // Conversation Summary Operations
+        public void SaveConversationSummary(ConversationSummary summary)
         {
-            string filePath = Path.Combine(_memoryDir, "conversation_summary.json");
-            var summaryEntry = new
-            {
-                summary = summary,
-                timestamp = DateTime.Now
-            };
-            string json = JsonSerializer.Serialize(summaryEntry, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(filePath, json);
+            var summaries = _store.LoadConversationSummaries();
+            summaries.Add(summary);
+            _store.SaveConversationSummaries(summaries);
         }
 
-        public void SaveMemory(MemoryEntry entry)
+        public List<ConversationSummary> LoadConversationSummaries()
         {
-            SaveFact(entry);
+            return _store.LoadConversationSummaries();
         }
 
+        // Skills Operations
+        public void SaveSkill(MemoryEntry entry)
+        {
+            var skills = _store.LoadSkills();
+            bool exists = skills.Any(e => e.Key == entry.Key && e.Value == entry.Value);
+            if (!exists)
+                skills.Add(entry);
+            _store.SaveSkills(skills);
+        }
+
+        public List<MemoryEntry> LoadSkills()
+        {
+            return _store.LoadSkills();
+        }
+
+        // Memory Retrieval Operations (with scoring/compression)
         public List<MemoryEntry> LoadMemory(string key = "")
         {
-            var facts = LoadFacts();
-            var profile = LoadUserProfile();
-            var learnings = LoadSystemLearnings();
+            var facts = _store.LoadFacts();
+            var profile = _store.LoadUserProfile();
+            var learnings = _store.LoadSystemLearnings();
+            var skills = _store.LoadSkills();
 
-            var all = facts.Concat(profile).Concat(learnings).ToList();
+            var all = facts.Concat(profile).Concat(learnings).Concat(skills).ToList();
 
             if (!string.IsNullOrWhiteSpace(key))
                 return all.Where(e => e.Key == key).ToList();
@@ -190,10 +130,16 @@ namespace Alissa.Core.Services
             return all;
         }
 
+        public List<MemoryEntry> GetRelevantMemory(int maxEntries)
+        {
+            var all = LoadMemory();
+            var compressed = _compressor.EnforceCapacity(all);
+            return _scorer.ScoreAndRank(compressed, maxEntries);
+        }
+
         public List<MemoryEntry> LoadTopMemories(int count = 10)
         {
-            var allMemory = LoadMemory();
-            return _scorer.ScoreAndRank(allMemory, count);
+            return GetRelevantMemory(count);
         }
 
         public List<MemoryEntry> LoadContextMemory(int maxEntries, bool includeCore = true)
@@ -204,32 +150,22 @@ namespace Alissa.Core.Services
 
         public void SummarizeMemory()
         {
-            var allMemory = LoadMemory();
-            _compressor.CompressMemory(allMemory);
+            var all = LoadMemory();
+            _compressor.CompressMemory(all);
 
-            var grouped = allMemory.GroupBy(e => e.Key);
-            foreach (var g in grouped)
-            {
-                foreach (var entry in g)
-                {
-                    SaveFact(entry);
-                }
-            }
+            var facts = all.Where(e => e.Key != null).ToList();
+            _store.SaveFacts(facts);
         }
 
         public void DeleteMemory(string key)
         {
-            var facts = LoadFacts().Where(e => e.Key != key).ToList();
-            var profile = LoadUserProfile().Where(e => e.Key != key).ToList();
-            var learnings = LoadSystemLearnings().Where(e => e.Key != key).ToList();
+            var facts = _store.LoadFacts().Where(e => e.Key != key).ToList();
+            var profile = _store.LoadUserProfile().Where(e => e.Key != key).ToList();
+            var learnings = _store.LoadSystemLearnings().Where(e => e.Key != key).ToList();
 
-            string factsPath = Path.Combine(_longTermDir, "facts.json");
-            string profilePath = Path.Combine(_longTermDir, "user_profile.json");
-            string learningsPath = Path.Combine(_longTermDir, "system_learnings.json");
-
-            File.WriteAllText(factsPath, JsonSerializer.Serialize(facts, new JsonSerializerOptions { WriteIndented = true }));
-            File.WriteAllText(profilePath, JsonSerializer.Serialize(profile, new JsonSerializerOptions { WriteIndented = true }));
-            File.WriteAllText(learningsPath, JsonSerializer.Serialize(learnings, new JsonSerializerOptions { WriteIndented = true }));
+            _store.SaveFacts(facts);
+            _store.SaveUserProfile(profile);
+            _store.SaveSystemLearnings(learnings);
         }
     }
 }

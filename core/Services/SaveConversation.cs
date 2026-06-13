@@ -7,66 +7,88 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
+/// <summary>
+/// Handles saving conversations and coordinating the memory pipeline.
+/// Uses MemoryPipeline to ensure clean separation of concerns.
+/// No direct summary generation - delegates to pipeline services.
+/// </summary>
 public static class SaveConversation
 {
     public static async Task SaveConversationAsync(
         List<string> conversationLog,
         AlissaClient alissa,
         AppConfig config,
-        string basePath)
+        string basePath,
+        IChatClient? chatClient = null,
+        IPromptBuilder? promptBuilder = null)
     {
         try
         {
             string logsDir = Path.Combine(basePath, "logs", "conversations");
-            string summariesDir = Path.Combine(basePath, "logs", "summaries");
-
             Directory.CreateDirectory(logsDir);
-            Directory.CreateDirectory(summariesDir);
 
             string collectedEmojis = alissa.CurrentSession.CollectedEmojis;
-
-            int conversationLength = conversationLog.Count;
-            int factor = config.Limits.SummaryDivisionFactor;
-
-            int lineErrorLow = Math.Max(1, (conversationLength / factor) - 1);
-            int lineErrorHigh = Math.Max(1, (conversationLength / factor) + 1);
-            if (lineErrorLow == 0) { lineErrorLow++; lineErrorHigh++; }
-            if (lineErrorHigh == lineErrorLow) { lineErrorHigh++; }
-
             string conversationPath = Path.Combine(logsDir, $"conversation_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt");
+
             File.WriteAllLines(conversationPath, conversationLog);
-
-            // Extract and save conversation summary as memory
-            if (config.Settings.EnableSummaries)
-            {
-                string summaryPrompt = $"Summarize this conversation in {lineErrorLow} to {lineErrorHigh} lines:";
-                string summary = await alissa.SendAsync(summaryPrompt + "\n\n" + string.Join("\n", conversationLog));
-
-                string summaryPath = Path.Combine(summariesDir, $"summary_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt");
-                File.WriteAllText(summaryPath, summary);
-
-                // Save conversation summary to memory root
-                var memoryManager = new MemoryManager(basePath, config.Memory);
-                memoryManager.SaveConversationSummary(summary);
-
-                // Also save as a fact entry for context
-                var summaryFact = new MemoryEntry(
-                    key: "conversation_summary",
-                    value: summary,
-                    relevance: 0.8,
-                    isCore: false
-                );
-                memoryManager.SaveFact(summaryFact);
-            }
-            
             File.AppendAllText(conversationPath, Environment.NewLine + Environment.NewLine + $"Emojis: {collectedEmojis}");
-            Console.WriteLine($"Conversation saved: {conversationPath}");
-            if (config.Settings.EnableSummaries)
-                Console.WriteLine($"Summary saved: {Path.Combine(summariesDir, $"summary_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt")}");
+
+            Alissa.Core.Utils.TextHandler.PrintText($"Conversation saved: {conversationPath}");
+
+            if (config.Settings.EnableSummaries && chatClient != null && promptBuilder != null)
+            {
+                await ProcessConversationMemoryAsync(conversationLog, alissa, config, basePath, chatClient, promptBuilder);
+            }
         }
         catch (Exception ex)
         {
             ErrorHandler.Handle(ex, basePath, verbose: true);
         }
     }
+
+    private static async Task ProcessConversationMemoryAsync(
+        List<string> conversationLog,
+        AlissaClient alissa,
+        AppConfig config,
+        string basePath,
+        IChatClient chatClient,
+        IPromptBuilder promptBuilder)
+    {
+        try
+        {
+            string conversationText = string.Join("\n", conversationLog);
+
+            var summaryService = new SummaryGenerationService(chatClient, promptBuilder);
+            var extractionService = new MemoryExtractionService(chatClient, promptBuilder);
+            var memoryManager = new MemoryManager(basePath, config.Memory);
+            var mediumTermService = new MediumTermMemoryService(basePath, 50, config.PromptRules.IncludeMediumTermMemory);
+            var indexBuilder = new MemoryIndexBuilder(basePath, config.IndexingRules, memoryManager);
+
+            var pipeline = new MemoryPipeline(
+                summaryService,
+                extractionService,
+                memoryManager,
+                mediumTermService,
+                indexBuilder);
+
+            var sessionId = alissa.CurrentSession.SessionId;
+            var summary = await pipeline.ProcessConversationAsync(conversationText, sessionId);
+
+            Alissa.Core.Utils.TextHandler.PrintText("Conversation processed through memory pipeline.");
+
+            if (!string.IsNullOrWhiteSpace(summary.Summary))
+            {
+                string summariesDir = Path.Combine(basePath, "logs", "summaries");
+                Directory.CreateDirectory(summariesDir);
+                var summaryPath = Path.Combine(summariesDir, $"summary_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt");
+                File.WriteAllText(summaryPath, summary.Summary);
+                Alissa.Core.Utils.TextHandler.PrintText($"Summary saved: {summaryPath}");
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorHandler.Handle(ex, basePath, false);
+        }
+    }
 }
+

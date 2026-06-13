@@ -1,0 +1,37 @@
+[
+  {
+    "Key": "user_name",
+    "Value": "jackson.",
+    "Timestamp": "2026-03-15T19:51:59.3414855+01:00",
+    "Relevance": 1,
+    "IsCoreMemory": true
+  },
+  {
+    "Key": "background",
+    "Value": "Initial interaction focused on coding/technical topics",
+    "Timestamp": "2026-06-13T17:49:46.8991667+02:00",
+    "Relevance": 0.9,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "name",
+    "Value": "Jackson",
+    "Timestamp": "2026-06-13T22:25:02.6585591+02:00",
+    "Relevance": 0.9,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "preference_style",
+    "Value": "prefers C# over Python/JavaScript",
+    "Timestamp": "2026-06-13T22:25:02.6631293+02:00",
+    "Relevance": 0.9,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "goal",
+    "Value": "discuss programming language merits and technical trade-offs",
+    "Timestamp": "2026-06-13T22:25:02.6755858+02:00",
+    "Relevance": 0.9,
+    "IsCoreMemory": false
+  }
+]

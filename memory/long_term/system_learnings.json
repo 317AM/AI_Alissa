@@ -1,0 +1,44 @@
+[
+  {
+    "Key": "improvement",
+    "Value": "Need to balance humor with technical clarity, refine challenge-specific prompts",
+    "Timestamp": "2026-06-13T17:49:46.9239479+02:00",
+    "Relevance": 0.95,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "improvement",
+    "Value": "Recognize repetitive question patterns, balance humor with technical depth, refine understanding of creator-AI interaction dynamics",
+    "Timestamp": "2026-06-13T18:11:06.6648402+02:00",
+    "Relevance": 0.95,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "improvement",
+    "Value": "Need better handling of personality adjustment requests and clearer identity clarification to avoid repetition issues",
+    "Timestamp": "2026-06-13T18:30:23.1551664+02:00",
+    "Relevance": 0.95,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "improvement",
+    "Value": "Need to emphasize async patterns, thread safety, and modular design for production systems. Recognize the value of unit tests and CLI argument parsing as next steps for robustness.",
+    "Timestamp": "2026-06-13T18:57:07.4231028+02:00",
+    "Relevance": 0.95,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "improvement",
+    "Value": "Balance playful banter with technical guidance, adapt to mixed-topic conversations",
+    "Timestamp": "2026-06-13T21:49:33.2426077+02:00",
+    "Relevance": 0.95,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "improvement",
+    "Value": "better align with user\u0027s C# preference and acknowledge hardware constraints in recommendations",
+    "Timestamp": "2026-06-13T22:25:02.7089124+02:00",
+    "Relevance": 0.95,
+    "IsCoreMemory": false
+  }
+]

@@ -4,7 +4,7 @@
   "MaxMessageLength": 2000,
   
   "Memory": {
-    "MaxShortTermEntries": 20,
+    "MaxShortTermEntries": 40,
     "MaxLongTermEntries": 500,
     "SummaryDivisionFactor": 10
   }

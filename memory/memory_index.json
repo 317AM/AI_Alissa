@@ -1,0 +1,317 @@
+{
+  "Version": 1,
+  "LastBuiltUtc": "2026-06-13T20:25:02.7332948Z",
+  "Entries": {
+    "UserProfile_user_name": {
+      "Key": "user_name",
+      "Category": "UserProfile",
+      "Relevance": 1,
+      "Timestamp": "2026-03-15T19:51:59.3414855+01:00",
+      "IsCoreMemory": true,
+      "Tags": [
+        "jackson"
+      ]
+    },
+    "UserProfile_background": {
+      "Key": "background",
+      "Category": "UserProfile",
+      "Relevance": 0.9,
+      "Timestamp": "2026-06-13T17:49:46.8991667+02:00",
+      "IsCoreMemory": false,
+      "Tags": [
+        "initial",
+        "interaction",
+        "focused",
+        "coding/technical",
+        "topics"
+      ]
+    },
+    "UserProfile_name": {
+      "Key": "name",
+      "Category": "UserProfile",
+      "Relevance": 0.9,
+      "Timestamp": "2026-06-13T22:25:02.6585591+02:00",
+      "IsCoreMemory": false,
+      "Tags": [
+        "jackson"
+      ]
+    },
+    "UserProfile_preference_style": {
+      "Key": "preference_style",
+      "Category": "UserProfile",
+      "Relevance": 0.9,
+      "Timestamp": "2026-06-13T22:25:02.6631293+02:00",
+      "IsCoreMemory": false,
+      "Tags": [
+        "prefers",
+        "python/javascript"
+      ]
+    },
+    "UserProfile_goal": {
+      "Key": "goal",
+      "Category": "UserProfile",
+      "Relevance": 0.9,
+      "Timestamp": "2026-06-13T22:25:02.6755858+02:00",
+      "IsCoreMemory": false,
+      "Tags": [
+        "discuss",
+        "programming",
+        "language",
+        "merits",
+        "technical",
+        "trade-offs"
+      ]
+    },
+    "Fact_topic": {
+      "Key": "topic",
+      "Category": "Fact",
+      "Relevance": 0.8,
+      "Timestamp": "2026-06-13T17:49:46.9080825+02:00",
+      "IsCoreMemory": false,
+      "Tags": [
+        "optimizations",
+        "technical",
+        "depth",
+        "discussion"
+      ]
+    },
+    "Fact_math_game": {
+      "Key": "math_game",
+      "Category": "Fact",
+      "Relevance": 0.8,
+      "Timestamp": "2026-06-13T21:49:33.2189192+02:00",
+      "IsCoreMemory": false,
+      "Tags": [
+        "solved",
+        "puzzles",
+        "corrected",
+        "alissa\u0027s",
+        "number",
+        "choices",
+        "during"
+      ]
+    },
+    "Fact_list_reversal": {
+      "Key": "list_reversal",
+      "Category": "Fact",
+      "Relevance": 0.8,
+      "Timestamp": "2026-06-13T21:49:33.2246437+02:00",
+      "IsCoreMemory": false,
+      "Tags": [
+        "requested",
+        "reversal",
+        "starting"
+      ]
+    },
+    "Fact_description": {
+      "Key": "description",
+      "Category": "Fact",
+      "Relevance": 0.8,
+      "Timestamp": "2026-06-13T22:25:02.6883862+02:00",
+      "IsCoreMemory": false,
+      "Tags": [
+        "preferred",
+        "python/javascript",
+        "hardware",
+        "limitations",
+        "affect",
+        "resource-heavy",
+        "tasks"
+      ]
+    },
+    "Skill_technique": {
+      "Key": "technique",
+      "Category": "Skill",
+      "Relevance": 0.85,
+      "Timestamp": "2026-06-13T17:49:46.9095151+02:00",
+      "IsCoreMemory": false,
+      "Tags": [
+        "challenging",
+        "assumptions",
+        "playful",
+        "teasing",
+        "curiosity-driven",
+        "questioning"
+      ]
+    },
+    "Skill_problem_solving": {
+      "Key": "problem_solving",
+      "Category": "Skill",
+      "Relevance": 0.85,
+      "Timestamp": "2026-06-13T21:49:33.2327503+02:00",
+      "IsCoreMemory": false,
+      "Tags": [
+        "demonstrated",
+        "ability",
+        "solve",
+        "puzzles",
+        "correct"
+      ]
+    },
+    "Skill_code_handling": {
+      "Key": "code_handling",
+      "Category": "Skill",
+      "Relevance": 0.85,
+      "Timestamp": "2026-06-13T21:49:33.2346352+02:00",
+      "IsCoreMemory": false,
+      "Tags": [
+        "requested",
+        "specific",
+        "tasks",
+        "reversal)",
+        "received"
+      ]
+    },
+    "Skill_description": {
+      "Key": "description",
+      "Category": "Skill",
+      "Relevance": 0.85,
+      "Timestamp": "2026-06-13T22:25:02.7011223+02:00",
+      "IsCoreMemory": false,
+      "Tags": [
+        "blending",
+        "humor",
+        "quality",
+        "critiques",
+        "mocking",
+        "python/javascript"
+      ]
+    },
+    "SystemLearning_improvement": {
+      "Key": "improvement",
+      "Category": "SystemLearning",
+      "Relevance": 0.95,
+      "Timestamp": "2026-06-13T17:49:46.9239479+02:00",
+      "IsCoreMemory": false,
+      "Tags": [
+        "balance",
+        "humor",
+        "technical",
+        "clarity",
+        "refine",
+        "challenge-specific",
+        "prompts"
+      ]
+    }
+  },
+  "TotalMemories": 15,
+  "AllTags": [
+    "jackson",
+    "initial",
+    "interaction",
+    "focused",
+    "coding/technical",
+    "topics",
+    "prefers",
+    "python/javascript",
+    "discuss",
+    "programming",
+    "language",
+    "merits",
+    "technical",
+    "trade-offs",
+    "alissa",
+    "memory",
+    "limitations",
+    "expressing",
+    "excitement",
+    "discussed",
+    "optimizations",
+    "depth",
+    "discussion",
+    "\u0027hello",
+    "world\u0027",
+    "example",
+    "alissa\u0027s",
+    "birthday",
+    "(january",
+    "31st)",
+    "preferred",
+    "coding",
+    "user\u0027s",
+    "self-generated",
+    "sparking",
+    "meta-discussion",
+    "about",
+    "refactored",
+    "async/await",
+    "thread",
+    "safety",
+    "error",
+    "handling",
+    "solved",
+    "puzzles",
+    "corrected",
+    "number",
+    "choices",
+    "during",
+    "requested",
+    "reversal",
+    "starting",
+    "languages",
+    "hardware",
+    "affect",
+    "resource-heavy",
+    "tasks",
+    "challenging",
+    "assumptions",
+    "playful",
+    "teasing",
+    "curiosity-driven",
+    "questioning",
+    "analysis",
+    "suggesting",
+    "maintaining",
+    "discussions",
+    "suggestions",
+    "project",
+    "origin",
+    "inference",
+    "pattern",
+    "non-blocking",
+    "thread-safe",
+    "structures",
+    "(concurrentbag)",
+    "demonstrated",
+    "ability",
+    "solve",
+    "correct",
+    "specific",
+    "reversal)",
+    "received",
+    "blending",
+    "humor",
+    "quality",
+    "critiques",
+    "mocking",
+    "balance",
+    "clarity",
+    "refine",
+    "challenge-specific",
+    "prompts",
+    "recognize",
+    "repetitive",
+    "question",
+    "patterns",
+    "better",
+    "personality",
+    "adjustment",
+    "requests",
+    "clearer",
+    "identity",
+    "emphasize",
+    "async",
+    "modular",
+    "design",
+    "banter",
+    "guidance",
+    "adapt",
+    "mixed-topic",
+    "conversations",
+    "align",
+    "preference",
+    "acknowledge",
+    "constraints"
+  ],
+  "AllTopics": []
+}

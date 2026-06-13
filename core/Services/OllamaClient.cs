@@ -42,49 +42,86 @@ namespace Alissa.Core.Services
             string userInput,
             Action<string>? onEmoji = null)
         {
-            string prompt =
-                systemPrompt + "\n" +
-                "User: " + userInput + "\n" +
-                "Alissa:";
+            string prompt = BuildPrompt(systemPrompt, userInput);
+            object payload = CreatePayload(prompt);
+            string jsonPayload = JsonSerializer.Serialize(payload);
 
-            object payload = new
+            using (StringContent content = new StringContent(jsonPayload, Encoding.UTF8, "application/json"))
+            {
+                using (var request = new HttpRequestMessage(HttpMethod.Post, "/api/generate") { Content = content })
+                {
+                    using (HttpResponseMessage response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
+                    {
+                        response.EnsureSuccessStatusCode();
+
+                        using (Stream stream = await response.Content.ReadAsStreamAsync())
+                        {
+                            using (StreamReader reader = new StreamReader(stream))
+                            {
+                                bool isProcessing = true;
+
+                                while (isProcessing)
+                                {
+                                    string? line = await reader.ReadLineAsync();
+                                    bool hasLine = !string.IsNullOrWhiteSpace(line);
+
+                                    if (hasLine)
+                                    {
+                                        var (text, isDone) = ProcessStreamLine(line, onEmoji);
+
+                                        if (!string.IsNullOrEmpty(text))
+                                        {
+                                            yield return text;
+                                        }
+
+                                        if (isDone)
+                                        {
+                                            isProcessing = false;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        isProcessing = false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private string BuildPrompt(string systemPrompt, string userInput)
+        {
+            string prompt = systemPrompt + "\n" + "User: " + userInput + "\n" + "Alissa:";
+            return prompt;
+        }
+
+        private object CreatePayload(string prompt)
+        {
+            return new
             {
                 model = _modelName,
                 prompt = prompt,
                 stream = true,
                 keep_alive = $"{_keepAliveMinutes}m"
             };
+        }
 
-            string jsonPayload = JsonSerializer.Serialize(payload);
-            using StringContent content =
-                new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+        private (string text, bool isDone) ProcessStreamLine(string line, Action<string>? onEmoji)
+        {
+            string resultText = string.Empty;
+            bool resultIsDone = false;
 
-            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/generate")
+            try
             {
-                Content = content
-            };
-
-            using HttpResponseMessage response =
-                await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-
-            response.EnsureSuccessStatusCode();
-
-            using Stream stream = await response.Content.ReadAsStreamAsync();
-            using StreamReader reader = new StreamReader(stream);
-
-            bool done = false;
-            string? line = await reader.ReadLineAsync();
-
-            while (line != null && !done)
-            {
-                if (!string.IsNullOrWhiteSpace(line))
+                using (JsonDocument document = JsonDocument.Parse(line))
                 {
-                    using JsonDocument document = JsonDocument.Parse(line);
+                    bool hasResponse = document.RootElement.TryGetProperty("response", out JsonElement token);
 
-                    if (document.RootElement.TryGetProperty("response", out JsonElement token))
+                    if (hasResponse)
                     {
                         string text = token.GetString() ?? string.Empty;
-
                         EmojiUtils.ExtractEmojis(text, out string cleaned, out string emojis);
 
                         if (!string.IsNullOrEmpty(emojis))
@@ -92,20 +129,23 @@ namespace Alissa.Core.Services
                             onEmoji?.Invoke(emojis);
                         }
 
-                        if (!string.IsNullOrEmpty(cleaned))
-                        {
-                            yield return cleaned;
-                        }
+                        resultText = cleaned;
                     }
 
-                    if (document.RootElement.TryGetProperty("done", out JsonElement doneEl)
-                        && doneEl.GetBoolean())
+                    bool hasDone = document.RootElement.TryGetProperty("done", out JsonElement doneEl);
+
+                    if (hasDone)
                     {
-                        done = true;
+                        resultIsDone = doneEl.GetBoolean();
                     }
                 }
-                line = await reader.ReadLineAsync();
             }
+            catch
+            {
+                // Silently handle JSON parsing errors
+            }
+
+            return (resultText, resultIsDone);
         }
         public IAsyncEnumerable<string> StreamAsync(string systemPrompt, string userInput)
         {

@@ -1,6 +1,6 @@
 {
-  "ModelName": "qwen3:8b",
-  "MaxTokens": 1024,
-  "ResponseTimeoutSeconds": 30,
-  "KeepAliveMinutes": 10
+  "ModelName": "qwen3:14b",
+  "MaxTokens": 2048,
+  "ResponseTimeoutSeconds": 60,
+  "KeepAliveMinutes": 30
 }

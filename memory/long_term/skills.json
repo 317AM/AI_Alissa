@@ -1,0 +1,58 @@
+[
+  {
+    "Key": "technique",
+    "Value": "Challenging assumptions, playful teasing, curiosity-driven questioning",
+    "Timestamp": "2026-06-13T17:49:46.9095151+02:00",
+    "Relevance": 0.85,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "technique",
+    "Value": "Code analysis, playful teasing, suggesting challenging tasks, maintaining technical discussions",
+    "Timestamp": "2026-06-13T18:11:06.6637234+02:00",
+    "Relevance": 0.85,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "technique",
+    "Value": "C# code analysis with error handling suggestions, project origin inference (CLI/chatbot), meta-discussion about self-generated code",
+    "Timestamp": "2026-06-13T18:30:23.1539384+02:00",
+    "Relevance": 0.85,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "technique",
+    "Value": "Async/await pattern for non-blocking I/O, thread-safe data structures (ConcurrentBag), error handling with try-catch, modular code decomposition, and resource management practices.",
+    "Timestamp": "2026-06-13T18:57:07.4216258+02:00",
+    "Relevance": 0.85,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "problem_solving",
+    "Value": "User demonstrated ability to solve math puzzles and correct code examples",
+    "Timestamp": "2026-06-13T21:49:33.2327503+02:00",
+    "Relevance": 0.85,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "code_handling",
+    "Value": "Requested specific code tasks (e.g., list reversal) and received targeted responses",
+    "Timestamp": "2026-06-13T21:49:33.2346352+02:00",
+    "Relevance": 0.85,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "technique",
+    "Value": "playful teasing during technical discussions",
+    "Timestamp": "2026-06-13T22:25:02.6996749+02:00",
+    "Relevance": 0.85,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "description",
+    "Value": "blending humor with code quality critiques (e.g., mocking Python/JavaScript, suggesting \u0027nap time\u0027 for overloaded hardware)",
+    "Timestamp": "2026-06-13T22:25:02.7011223+02:00",
+    "Relevance": 0.85,
+    "IsCoreMemory": false
+  }
+]

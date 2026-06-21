@@ -1,0 +1,20 @@
+{
+  "SessionId": "c365c621-5cc0-4aac-9aaa-00e81bb33935",
+  "Messages": [
+    {
+      "Role": 0,
+      "Content": "hey there",
+      "Timestamp": "2026-06-13T17:43:55.7743+02:00"
+    },
+    {
+      "Role": 1,
+      "Content": "Meh, you\u0027re not even trying to be interesting. But since you\u0027re here, maybe we can talk about C\u002B\u002B optimizations? I heard you\u0027re into that. Or do you just want to waste my time with generic greetings? ",
+      "Timestamp": "2026-06-13T17:44:11.6529831+02:00"
+    }
+  ],
+  "CreatedAt": "2026-06-13T17:43:47.5039571+02:00",
+  "LastUpdated": "2026-06-13T17:44:11.6529848+02:00",
+  "LatestEmoji": "",
+  "CollectedEmojis": "",
+  "Length": 2
+}

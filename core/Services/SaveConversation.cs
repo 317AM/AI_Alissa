@@ -1,11 +1,6 @@
 ﻿using Alissa.Core.Interfaces;
 using Alissa.Core.Models;
 using Alissa.Core.Services;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handles saving conversations and coordinating the memory pipeline.
@@ -33,7 +28,7 @@ public static class SaveConversation
             File.WriteAllLines(conversationPath, conversationLog);
             File.AppendAllText(conversationPath, Environment.NewLine + Environment.NewLine + $"Emojis: {collectedEmojis}");
 
-            Alissa.Core.Utils.TextHandler.PrintText($"Conversation saved: {conversationPath}");
+            Alissa.Core.Utils.TextManager.Status($"Conversation saved: {conversationPath}");
 
             if (config.Settings.EnableSummaries && chatClient != null && promptBuilder != null)
             {
@@ -74,7 +69,7 @@ public static class SaveConversation
             var sessionId = alissa.CurrentSession.SessionId;
             var summary = await pipeline.ProcessConversationAsync(conversationText, sessionId);
 
-            Alissa.Core.Utils.TextHandler.PrintText("Conversation processed through memory pipeline.");
+            Alissa.Core.Utils.TextManager.Status("Conversation processed through memory pipeline.");
 
             if (!string.IsNullOrWhiteSpace(summary.Summary))
             {
@@ -82,7 +77,7 @@ public static class SaveConversation
                 Directory.CreateDirectory(summariesDir);
                 var summaryPath = Path.Combine(summariesDir, $"summary_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt");
                 File.WriteAllText(summaryPath, summary.Summary);
-                Alissa.Core.Utils.TextHandler.PrintText($"Summary saved: {summaryPath}");
+                Alissa.Core.Utils.TextManager.Status($"Summary saved: {summaryPath}");
             }
         }
         catch (Exception ex)

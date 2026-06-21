@@ -1,4 +1,4 @@
-﻿using Alissa.Core.Interfaces;
+using Alissa.Core.Interfaces;
 using Alissa.Core.Models;
 using Alissa.Core.Services;
 using Alissa.Core.Utils;
@@ -10,7 +10,7 @@ namespace Alissa.Main
     //  FILE HEADER — Alissa Main Program — BLOCK HEADER COMMENT
     // ------------------------------------------------------------------------------------------------------------------------------------ //
     //
-    //  Serial Number:  41.1.2
+    //  Serial Number:  4.1.2
     //  Program Name:   Alissa
     //  Project Name:   AI_Alissa
     //
@@ -35,54 +35,70 @@ namespace Alissa.Main
     //      Routes all communication through AlissaClient for proper architecture.
     //
     //  Input:
-    //      User messages from the console.
+    //      User messages from the console or Hub.
     //
     //  Output:
-    //      AI responses and logs to the console.
+    //      AI responses and logs through TextManager.
     //
     //  Logic Steps:
-    //      1. Setup paths and config
-    //      2. Dependency injection
-    //      3. Main chat loop (via AlissaClient)
-    //      4. Save conversation and shutdown
+    //      1. Setup paths and configuration
+    //      2. Configure TextManager
+    //      3. Initialize services
+    //      4. Run main chat loop
+    //      5. Save conversation and shutdown
     //
     //  Limitations, Constraints and Assumptions:
     //      - Assumes config and memory files exist and are valid.
-    //      - Console application only.
+    //      - Console and Hub modes supported.
     //      - All model communication goes through AlissaClient.
     //
     //  Dependencies and Environment:
-    //      C# 14.0, .NET 10.0, Console
+    //      C# 14.0, .NET 10.0, Console, Hub 317
     //
     //  Constants: NONE
     //
     //  Methods and Functions:
-    //      Main() – Entry point
+    //      Main()                - Application entry point
+    //      ResolveBasePath()     - Locates project root
+    //      LoadConfiguration()   - Loads application configuration
+    //      RunChatLoop()         - Executes chat session
+    //      ProcessUserMessage()  - Handles a user request
+    //      FinalizeSession()     - Saves session and shuts down
     //
     //  Architecture and Design:
-    //      See README.md and docs/architecture.md
+    //      Program
+    //          -> AlissaClient
+    //              -> PromptBuilder
+    //              -> MemoryManager
+    //              -> SessionManager
+    //              -> OllamaClient
     //
     //  Notes:
-    //      All printing is routed through TextPrinter.PrintText.
-    //      All model calls go through AlissaClient.
+    //      All output is routed through TextManager.
+    //      All model interaction is routed through AlissaClient.
     //=======================================================================================================================================//
 
     internal class Program
     {
         static async Task Main(string[] args)
         {
-            string basePath = ResolveBasePath();
-            var config = LoadConfiguration(basePath);
-            bool configLoaded = config != null;
+            bool hubMode = TextManager.TryConfigureFromArgs(args);
 
-            if (configLoaded)
+            if (!hubMode)
             {
-                await RunChatLoop(basePath, config!);
+                TextManager.Configure(OutputMode.Console);
             }
-            else
+
+            string basePath = ResolveBasePath();
+            AppConfig? config = LoadConfiguration(basePath);
+
+            if (config is null)
             {
-                Alissa.Core.Utils.TextHandler.PrintText("Failed to load configuration. Exiting.", true);
+                TextManager.Status("Failed to load configuration. Exiting.");
+                return;
             }
+
+            await RunChatLoop(basePath, config);
         }
 
         private static string ResolveBasePath()
@@ -102,43 +118,69 @@ namespace Alissa.Main
 
         private static AppConfig? LoadConfiguration(string basePath)
         {
+            AppConfig? config = null;
+
             try
             {
-                return ConfigService.LoadAll(basePath);
+                config = ConfigService.LoadAll(basePath);
             }
             catch (Exception ex)
             {
                 ErrorHandler.Handle(ex, basePath, true);
-                Alissa.Core.Utils.TextHandler.PrintText("[Error loading config. Exiting.]", true);
-                return null;
+                TextManager.Status("[Error loading config. Exiting.]");
             }
+
+            return config;
         }
 
         private static async Task RunChatLoop(string basePath, AppConfig config)
         {
             IMemoryManager memoryManager = new MemoryManager(basePath, config.Memory);
-            IChatClient chatClient = new OllamaClient(config.Model.ModelName, config.Model.KeepAliveMinutes);
-            IPromptBuilder promptBuilder = new PromptBuilder(basePath, memoryManager, config.PromptRules, config.PersonalityRules);
+            IChatClient chatClient = new OllamaClient(
+                config.Model.ModelName,
+                config.Model.KeepAliveMinutes);
+
+            IPromptBuilder promptBuilder = new PromptBuilder(
+                basePath,
+                memoryManager,
+                config.PromptRules,
+                config.PersonalityRules);
+
             ISessionManager sessionManager = new SessionManager(basePath);
 
-            AlissaClient alissa = new AlissaClient(chatClient, promptBuilder, memoryManager, sessionManager);
+            AlissaClient alissa = new AlissaClient(
+                chatClient,
+                promptBuilder,
+                memoryManager,
+                sessionManager);
 
-            Alissa.Core.Utils.TextHandler.PrintText($"\n🐱 Alissa is online using model '{config.Model.ModelName}'! Type 'exit' to quit.", true);
+            TextManager.Status(
+                $"\n🐱 Alissa is online using model '{config.Model.ModelName}'! " +
+                (TextManager.IsHubMode
+                    ? "Routing through Hub 317."
+                    : "Type 'exit' to quit."));
 
-            var conversationLog = new List<string>();
+            List<string> conversationLog = [];
             bool running = true;
 
             while (running)
             {
-                Alissa.Core.Utils.TextHandler.NextLine();
-                Alissa.Core.Utils.TextHandler.PrintText("You: ");
-                string? userInput = TextHandler.ReadText();
-
-                bool hasInput = !string.IsNullOrWhiteSpace(userInput);
-
-                if (hasInput)
+                if (!TextManager.IsHubMode)
                 {
-                    bool isExitCommand = userInput!.Trim().ToLower() == "exit";
+                    TextManager.NextLine();
+                    TextManager.PrintText("You: ");
+                }
+
+                string? userInput = await TextManager.ReadInputAsync();
+
+                if (!string.IsNullOrWhiteSpace(userInput))
+                {
+                    bool isExitCommand =
+                        !TextManager.IsHubMode &&
+                        string.Equals(
+                            userInput.Trim(),
+                            "exit",
+                            StringComparison.OrdinalIgnoreCase);
 
                     if (isExitCommand)
                     {
@@ -146,50 +188,61 @@ namespace Alissa.Main
                     }
                     else
                     {
-                        Alissa.Core.Utils.TextHandler.NextLine();
-                        await ProcessUserMessage(userInput, alissa, conversationLog, config, basePath, chatClient, promptBuilder);
+                        if (!TextManager.IsHubMode)
+                        {
+                            TextManager.NextLine();
+                        }
+
+                        await ProcessUserMessage(
+                            userInput,
+                            alissa,
+                            conversationLog,
+                            basePath);
                     }
                 }
             }
 
-            await FinalizeSession(conversationLog, alissa, config, basePath, chatClient, promptBuilder);
+            await FinalizeSession(
+                conversationLog,
+                alissa,
+                config,
+                basePath,
+                chatClient,
+                promptBuilder);
         }
 
         private static async Task ProcessUserMessage(
             string userInput,
             AlissaClient alissa,
             List<string> conversationLog,
-            AppConfig config,
-            string basePath,
-            IChatClient chatClient,
-            IPromptBuilder promptBuilder)
+            string basePath)
         {
             try
             {
-                Alissa.Core.Utils.TextHandler.PrintText("Alissa: ");
+                TextManager.BeginResponse();
 
-                var fullReply = new StringBuilder();
+                StringBuilder fullReply = new();
 
-                await foreach (var token in alissa.StreamAsync(userInput))
+                await foreach (string token in alissa.StreamAsync(userInput))
                 {
-                    Alissa.Core.Utils.TextHandler.PrintText(token);
+                    TextManager.PrintToken(token);
                     fullReply.Append(token);
                 }
 
-                Alissa.Core.Utils.TextHandler.PrintText("\n");
+                TextManager.EndResponse();
 
                 conversationLog.Add($"User: {userInput}");
-                conversationLog.Add($"Alissa: {fullReply.ToString()}");
+                conversationLog.Add($"Alissa: {fullReply}");
             }
             catch (HttpRequestException ex)
             {
                 ErrorHandler.Handle(ex, basePath, true);
-                Alissa.Core.Utils.TextHandler.PrintText("[Ollama is not running]");
+                TextManager.Status("[Ollama is not running]");
             }
             catch (Exception ex)
             {
                 ErrorHandler.Handle(ex, basePath, true);
-                Alissa.Core.Utils.TextHandler.PrintText("[An error occurred during chat]");
+                TextManager.Status("[An error occurred during chat]");
             }
         }
 
@@ -219,8 +272,8 @@ namespace Alissa.Main
                 ErrorHandler.Handle(ex, basePath, true);
             }
 
-            Alissa.Core.Utils.TextHandler.NextLine();
-            Alissa.Core.Utils.TextHandler.PrintText("\n🐱 Goodbye!\n", true);
+            TextManager.Blank();
+            TextManager.Status("\n🐱 Goodbye!\n");
         }
     }
 }

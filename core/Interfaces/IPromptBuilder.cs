@@ -10,8 +10,10 @@ namespace Alissa.Core.Interfaces
         string BuildSystemPrompt();
 
         /// <summary>
-        /// Builds the system prompt with recent conversation context
+        /// Builds the system prompt with recent conversation context and query-aware memory retrieval
         /// </summary>
-        string BuildSystemPromptWithContext(List<Message> recentMessages);
+        /// <param name="recentMessages">Recent conversation messages</param>
+        /// <param name="currentUserInput">Current user input for query-aware memory search</param>
+        string BuildSystemPromptWithContext(List<Message> recentMessages, string currentUserInput = "");
     }
 }

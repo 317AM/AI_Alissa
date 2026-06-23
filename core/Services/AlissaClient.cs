@@ -20,6 +20,7 @@ namespace Alissa.Core.Services
         private readonly IPromptBuilder _promptBuilder;
         private readonly IMemoryManager _memoryManager;
         private readonly ISessionManager _sessionManager;
+        private readonly IThoughtService? _thoughtService;
 
         private Session _currentSession;
 
@@ -28,13 +29,18 @@ namespace Alissa.Core.Services
         /// </summary>
         public event Action<string>? OnTokenReceived;
 
-        public AlissaClient(IChatClient chatClient, IPromptBuilder promptBuilder,
-                             IMemoryManager memoryManager, ISessionManager sessionManager)
+        public AlissaClient(
+            IChatClient chatClient,
+            IPromptBuilder promptBuilder,
+            IMemoryManager memoryManager,
+            ISessionManager sessionManager,
+            IThoughtService? thoughtService = null)
         {
             _chatClient = chatClient;
             _promptBuilder = promptBuilder;
             _memoryManager = memoryManager;
             _sessionManager = sessionManager;
+            _thoughtService = thoughtService;
 
             _currentSession = _sessionManager.CreateSession();
 
@@ -57,7 +63,7 @@ namespace Alissa.Core.Services
             _currentSession.AddMessage(MessageRole.User, userInput);
             _memoryManager.SaveSessionCache(_currentSession.Messages);
 
-            string systemPrompt = BuildSystemPrompt();
+            string systemPrompt = BuildSystemPrompt(userInput);
 
             var sb = new StringBuilder();
             var emojiCollector = new StringBuilder();
@@ -88,6 +94,37 @@ namespace Alissa.Core.Services
 
             _sessionManager.SaveSession(_currentSession);
             _memoryManager.SaveSessionCache(_currentSession.Messages);
+
+            var hasThoughtService = _thoughtService != null;
+            if (hasThoughtService)
+            {
+                _ = FireAndForgetThoughtGeneration(userInput);
+            }
+        }
+
+        private async Task FireAndForgetThoughtGeneration(string userInput)
+        {
+            var hasThoughtService = _thoughtService != null;
+
+            if (!hasThoughtService)
+            {
+                return;
+            }
+
+            try
+            {
+                var thought = await _thoughtService.GenerateThoughtAsync(userInput, _currentSession.Messages);
+                var hasThought = !string.IsNullOrEmpty(thought);
+
+                if (hasThought)
+                {
+                    await _thoughtService.StoreThoughtAsync(thought, "session_reflection");
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorHandler.Handle(ex, null, false);
+            }
         }
 
         /// <summary>
@@ -95,13 +132,13 @@ namespace Alissa.Core.Services
         /// </summary>
         public Session CurrentSession => _currentSession;
 
-        private string BuildSystemPrompt()
+        private string BuildSystemPrompt(string currentUserInput = "")
         {
             var promptBuilderTyped = _promptBuilder as PromptBuilder;
 
             if (promptBuilderTyped != null)
             {
-                return promptBuilderTyped.BuildSystemPromptWithContext(_currentSession.Messages);
+                return promptBuilderTyped.BuildSystemPromptWithContext(_currentSession.Messages, currentUserInput);
             }
 
             return _promptBuilder.BuildSystemPrompt();

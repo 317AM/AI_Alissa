@@ -30,6 +30,7 @@ namespace Alissa.Core.Models
         /// <summary>
         /// Priority order for trimming when token budget exceeded.
         /// Lower index = higher priority (never trimmed).
+        /// Order: Identity > UserProfile > Facts > RecentContext > MediumTermMemory > Skills > InternalNotes > SystemLearnings > SessionCache
         /// </summary>
         [JsonPropertyName("trimPriority")]
         public List<string> TrimPriority { get; set; } = new()
@@ -38,7 +39,9 @@ namespace Alissa.Core.Models
             "UserProfile",
             "Facts",
             "RecentContext",
+            "MediumTermMemory",
             "Skills",
+            "InternalNotes",
             "SystemLearnings",
             "SessionCache"
         };

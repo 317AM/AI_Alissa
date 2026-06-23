@@ -262,14 +262,13 @@ namespace Alissa.Core.Services
 
             var entriesToRemove = new List<string>();
 
-            foreach (var kvp in index.Entries)
+            var nonCoreEntries = index.Entries
+                .Where(kvp => !kvp.Value.IsCoreMemory)
+                .ToList();
+
+            foreach (var kvp in nonCoreEntries)
             {
                 var entry = kvp.Value;
-
-                if (entry.IsCoreMemory)
-                {
-                    continue;
-                }
 
                 var ageInDays = (now - entry.Timestamp).TotalDays;
 

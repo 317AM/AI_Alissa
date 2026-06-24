@@ -35,23 +35,22 @@ public enum OutputMode
 public static class TextManager
 {
     // ── Private state ───────────────────────────────────────────
-    private static OutputMode       _mode        = OutputMode.Console;
-    private static HubOutputClient? _hub         = null;
-    private static string           _personality = "alissa";
+    private static OutputMode       _mode = OutputMode.Console;
+    private static HubOutputClient? _hub  = null;
 
     // ── Public read-only properties ─────────────────────────────
     public static OutputMode Mode         => _mode;
     public static bool       IsHubMode    => _mode == OutputMode.Hub317;
     public static bool       HubConnected => _hub?.IsConnected ?? false;
+    public static string?    LastUserName => _hub?.LastUserName;
 
     // ── Setup ────────────────────────────────────────────────────
     /// <summary>
     /// Call once at startup.  Pass hubUrl only when mode is Hub317.
     /// </summary>
-    public static void Configure(OutputMode mode, string? hubUrl = null, string personality = "alissa")
+    public static void Configure(OutputMode mode, string? hubUrl = null)
     {
-        _mode        = mode;
-        _personality = personality;
+        _mode = mode;
 
         if (mode == OutputMode.Hub317)
         {
@@ -73,6 +72,7 @@ public static class TextManager
     /// </summary>
     public static bool TryConfigureFromArgs(string[] args, string defaultUrl = "ws://localhost:317/ws/alissa")
     {
+        var result = false;
         var hubArg = args.FirstOrDefault(a =>
             a == "--hub" || a.StartsWith("--hub=", StringComparison.OrdinalIgnoreCase));
 
@@ -82,10 +82,13 @@ public static class TextManager
             ? hubArg.Split('=', 2)[1]
             : (hubArg != null ? defaultUrl : envUrl);
 
-        if (url is null) return false;
+        if (url != null)
+        {
+            Configure(OutputMode.Hub317, url);
+            result = true;
+        }
 
-        Configure(OutputMode.Hub317, url);
-        return true;
+        return result;
     }
 
     // ── AI streaming output ──────────────────────────────────────
@@ -94,16 +97,15 @@ public static class TextManager
     /// Signal that Alissa is starting to generate a response.
     /// In Hub mode sends stream_start; in Console mode prints "Alissa: ".
     /// </summary>
-    public static void BeginResponse(string? personality = null)
+    public static void BeginResponse()
     {
-        personality ??= _personality;
         switch (_mode)
         {
             case OutputMode.Console:
                 Console.Write("\nAlissa: ");
                 break;
             case OutputMode.Hub317:
-                _hub?.SendStreamStart(personality);
+                _hub?.SendStreamStart();
                 break;
         }
     }
@@ -129,16 +131,15 @@ public static class TextManager
     /// Signal the end of a response.
     /// In Hub mode sends stream_end; in Console mode prints a newline.
     /// </summary>
-    public static void EndResponse(string? personality = null)
+    public static void EndResponse()
     {
-        personality ??= _personality;
         switch (_mode)
         {
             case OutputMode.Console:
                 Console.WriteLine();
                 break;
             case OutputMode.Hub317:
-                _hub?.SendStreamEnd(personality);
+                _hub?.SendStreamEnd();
                 break;
         }
     }
@@ -147,16 +148,15 @@ public static class TextManager
     /// Send a complete, non-streamed response in one shot.
     /// Useful for short replies where streaming isn't needed.
     /// </summary>
-    public static void SendComplete(string content, string? personality = null)
+    public static void SendComplete(string content)
     {
-        personality ??= _personality;
         switch (_mode)
         {
             case OutputMode.Console:
                 Console.WriteLine($"\nAlissa: {content}");
                 break;
             case OutputMode.Hub317:
-                _hub?.SendMessage(content, personality);
+                _hub?.SendMessage(content);
                 break;
         }
     }
@@ -178,11 +178,11 @@ public static class TextManager
     }
 
     /// <summary>
-    /// In Hub mode, returns metadata (system prompt, history, personality id)
+    /// In Hub mode, returns metadata (system prompt, history)
     /// attached to the most recently received message. Null fields in Console mode.
     /// </summary>
-    public static (string? PersonalityId, string? SystemPrompt, List<HistEntry>? History) LastMessageMeta =>
-        (_hub?.LastPersonalityId, _hub?.LastSystemPrompt, _hub?.LastHistory);
+    public static (string? SystemPrompt, List<HistEntry>? History) LastMessageMeta =>
+        (_hub?.LastSystemPrompt, _hub?.LastHistory);
 
     // ── Status / log output ──────────────────────────────────────
     // These always go to the console so you can monitor Alissa
@@ -296,17 +296,17 @@ public sealed class HubOutputClient
     }
 
     // ── Outbound helpers ─────────────────────────────────────────
-    public void SendStreamStart(string personalityId) =>
-        _ = SendRawAsync(new OutMsg { Type = "stream_start", Role = "assistant", PersonalityId = personalityId });
+    public void SendStreamStart() =>
+        _ = SendRawAsync(new OutMsg { Type = "stream_start", Role = "assistant" });
 
     public void SendChunk(string token) =>
         _ = SendRawAsync(new OutMsg { Type = "stream_chunk", Content = token });
 
-    public void SendStreamEnd(string personalityId) =>
-        _ = SendRawAsync(new OutMsg { Type = "stream_end", PersonalityId = personalityId });
+    public void SendStreamEnd() =>
+        _ = SendRawAsync(new OutMsg { Type = "stream_end", Role = "assistant" });
 
-    public void SendMessage(string content, string personalityId) =>
-        _ = SendRawAsync(new OutMsg { Type = "message", Role = "assistant", Content = content, PersonalityId = personalityId });
+    public void SendMessage(string content) =>
+        _ = SendRawAsync(new OutMsg { Type = "message", Role = "assistant", Content = content });
 
     private async Task SendRawAsync(OutMsg msg)
     {
@@ -323,7 +323,7 @@ public sealed class HubOutputClient
     /// <summary>
     /// Blocks until a user message arrives from Hub 317.
     /// This replaces Console.ReadLine() in the chat loop when in Hub mode.
-    /// Also stores personalityId and systemPrompt on the message for use by PromptBuilder.
+    /// Also stores userName, systemPrompt, and history for use by services.
     /// </summary>
     public async Task<string?> WaitForMessageAsync(CancellationToken ct = default)
     {
@@ -332,7 +332,7 @@ public sealed class HubOutputClient
             try
             {
                 var msg = _inbox.Take(ct);
-                LastPersonalityId = msg.PersonalityId ?? "alissa";
+                LastUserName      = msg.UserName ?? "User";
                 LastSystemPrompt  = msg.SystemPrompt;
                 LastHistory       = msg.History;
                 return msg.Content;
@@ -342,27 +342,26 @@ public sealed class HubOutputClient
     }
 
     // The most recent metadata from the Hub for use by PromptBuilder
-    public string?          LastPersonalityId { get; private set; }
     public string?          LastSystemPrompt  { get; private set; }
+    public string?          LastUserName      { get; private set; }
     public List<HistEntry>? LastHistory       { get; private set; }
 
     // ── DTOs ──────────────────────────────────────────────────────
     private class OutMsg
     {
-        [JsonPropertyName("type")]          public string? Type          { get; set; }
-        [JsonPropertyName("role")]          public string? Role          { get; set; }
-        [JsonPropertyName("content")]       public string? Content       { get; set; }
-        [JsonPropertyName("personalityId")] public string? PersonalityId { get; set; }
+        [JsonPropertyName("type")]    public string? Type    { get; set; }
+        [JsonPropertyName("role")]    public string? Role    { get; set; }
+        [JsonPropertyName("content")] public string? Content { get; set; }
     }
 
     private class HubInboundMsg
     {
-        [JsonPropertyName("type")]          public string?          Type          { get; set; }
-        [JsonPropertyName("role")]          public string?          Role          { get; set; }
-        [JsonPropertyName("content")]       public string?          Content       { get; set; }
-        [JsonPropertyName("personalityId")] public string?          PersonalityId { get; set; }
-        [JsonPropertyName("systemPrompt")]  public string?          SystemPrompt  { get; set; }
-        [JsonPropertyName("history")]       public List<HistEntry>? History       { get; set; }
+        [JsonPropertyName("type")]         public string?          Type         { get; set; }
+        [JsonPropertyName("role")]         public string?          Role         { get; set; }
+        [JsonPropertyName("content")]      public string?          Content      { get; set; }
+        [JsonPropertyName("userName")]     public string?          UserName     { get; set; }
+        [JsonPropertyName("systemPrompt")] public string?          SystemPrompt { get; set; }
+        [JsonPropertyName("history")]      public List<HistEntry>? History      { get; set; }
     }
 }
 

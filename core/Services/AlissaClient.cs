@@ -132,6 +132,11 @@ namespace Alissa.Core.Services
         /// </summary>
         public Session CurrentSession => _currentSession;
 
+        /// <summary>
+        /// Gets the prompt builder (for setting user context etc).
+        /// </summary>
+        public IPromptBuilder PromptBuilder => _promptBuilder;
+
         private string BuildSystemPrompt(string currentUserInput = "")
         {
             var promptBuilderTyped = _promptBuilder as PromptBuilder;

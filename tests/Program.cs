@@ -2,7 +2,7 @@
 {
     /// <summary>
     /// Test runner for Alissa refactoring validation.
-    /// Runs tests for memory pipeline, indexing, prompt building, and configuration.
+    /// Runs tests for memory pipeline, indexing, prompt building, configuration, and Phase 1 improvements.
     /// </summary>
     internal class Program
     {
@@ -18,6 +18,7 @@
                 IndexingTests.RunAllTests();
                 PromptBuilderTests.RunAllTests();
                 ConfigurationTests.RunAllTests();
+                Phase1ImprovementTests.RunAllTests();
 
                 Console.WriteLine("\n╔════════════════════════════════════════╗");
                 Console.WriteLine("║  ✓ ALL TESTS COMPLETED SUCCESSFULLY    ║");

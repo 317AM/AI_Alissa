@@ -15,7 +15,8 @@ public static class SaveConversation
         AppConfig config,
         string basePath,
         IChatClient? chatClient = null,
-        IPromptBuilder? promptBuilder = null)
+        IPromptBuilder? promptBuilder = null,
+        MediumTermMemoryService? mediumTermMemoryService = null)
     {
         try
         {
@@ -32,7 +33,7 @@ public static class SaveConversation
 
             if (config.Settings.EnableSummaries && chatClient != null && promptBuilder != null)
             {
-                await ProcessConversationMemoryAsync(conversationLog, alissa, config, basePath, chatClient, promptBuilder);
+                await ProcessConversationMemoryAsync(conversationLog, alissa, config, basePath, chatClient, promptBuilder, mediumTermMemoryService);
             }
         }
         catch (Exception ex)
@@ -47,7 +48,8 @@ public static class SaveConversation
         AppConfig config,
         string basePath,
         IChatClient chatClient,
-        IPromptBuilder promptBuilder)
+        IPromptBuilder promptBuilder,
+        MediumTermMemoryService? injectedMediumTermService = null)
     {
         try
         {
@@ -56,7 +58,7 @@ public static class SaveConversation
             var summaryService = new SummaryGenerationService(chatClient, promptBuilder);
             var extractionService = new MemoryExtractionService(chatClient, promptBuilder);
             var memoryManager = new MemoryManager(basePath, config.Memory);
-            var mediumTermService = new MediumTermMemoryService(basePath, 50, config.PromptRules.IncludeMediumTermMemory);
+            var mediumTermService = injectedMediumTermService ?? new MediumTermMemoryService(basePath, 50, config.PromptRules.IncludeMediumTermMemory);
             var indexBuilder = new MemoryIndexBuilder(basePath, config.IndexingRules, memoryManager);
 
             var pipeline = new MemoryPipeline(

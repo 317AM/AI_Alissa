@@ -19,8 +19,10 @@ namespace Alissa.Core.Services
     private readonly IMemoryManager _memoryManager;
     private readonly MediumTermMemoryService? _mediumTermMemoryService;
     private readonly IThoughtService? _thoughtService;
+    private readonly IUserContextService? _userContextService;
     private readonly PromptRulesModel _promptRules;
     private readonly PersonalityRulesModel _personalityRules;
+    private string _currentUserCache = string.Empty;
 
     public PromptBuilder(
         string basePath,
@@ -28,14 +30,29 @@ namespace Alissa.Core.Services
         PromptRulesModel? promptRules = null,
         PersonalityRulesModel? personalityRules = null,
         MediumTermMemoryService? mediumTermMemoryService = null,
-        IThoughtService? thoughtService = null)
+        IThoughtService? thoughtService = null,
+        IUserContextService? userContextService = null)
     {
         _basePath = basePath;
         _memoryManager = memoryManager;
         _mediumTermMemoryService = mediumTermMemoryService;
         _thoughtService = thoughtService;
+        _userContextService = userContextService;
         _promptRules = promptRules ?? new PromptRulesModel();
         _personalityRules = personalityRules ?? new PersonalityRulesModel();
+        _currentUserCache = Environment.UserName ?? "User";
+    }
+
+    /// <summary>
+    /// Sets the current user context for prompt injection.
+    /// Call this before building prompts for a session.
+    /// </summary>
+    public void SetCurrentUser(string userName)
+    {
+        if (!string.IsNullOrWhiteSpace(userName))
+        {
+            _currentUserCache = userName;
+        }
     }
 
     /// <summary>
@@ -326,20 +343,19 @@ namespace Alissa.Core.Services
 
     private string BuildUserProfileSection(List<MemoryEntry> profile)
     {
-        bool hasProfile = profile.Any();
-
-        if (!hasProfile)
-        {
-            return string.Empty;
-        }
-
         var sb = new StringBuilder();
-        sb.AppendLine("\n## User Profile");
 
-        foreach (var entry in profile)
+        sb.AppendLine("\n## User Profile");
+        sb.AppendLine($"Current user: {_currentUserCache}");
+
+        var hasProfile = profile.Any();
+        if (hasProfile)
         {
-            string value = RestoreLineBreaks(entry.Value);
-            sb.AppendLine($"- {entry.Key}: {value}");
+            foreach (var entry in profile)
+            {
+                string value = RestoreLineBreaks(entry.Value);
+                sb.AppendLine($"- {entry.Key}: {value}");
+            }
         }
 
         return sb.ToString();

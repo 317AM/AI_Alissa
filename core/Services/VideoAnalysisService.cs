@@ -14,6 +14,32 @@ namespace Alissa.Core.Services
     /// </summary>
     public class VideoAnalysisService : IVideoAnalysisService
     {
+        // Constants
+        private const string TEMP_FRAMES_DIR = "temp";
+        private const string FRAMES_SUBDIR = "frames";
+        private const string VIDEO_PREFIX = "video_";
+        private const string TEMP_EXTENSION = ".tmp";
+        private const string FRAME_EXTENSION = ".jpg";
+        private const string FRAME_PATTERN_FORMAT = "frame_{0}.jpg";
+        private const string FFMPEG_EXECUTABLE = "ffmpeg";
+        private const string FFPROBE_EXECUTABLE = "ffprobe";
+        private const string VERSION_ARG = "-version";
+        private const string NO_FRAMES_MSG = "No frames could be extracted from the video.";
+        private const string FRAME_LABEL_FORMAT = "Frame {0}/{1}";
+        private const string VISION_PROMPT = "Describe what is on screen in this frame. Focus on: open applications, visible text, code, errors, or work context. Be concise (2-3 sentences).";
+        private const string VISION_CONTEXT_SUFFIX = " Context: ";
+        private const string NO_RESPONSE_MSG = "No response from vision model";
+        private const string FRAME_ANALYSIS_ERROR = "Frame analysis error: ";
+        private const string VIDEO_ANALYSIS_ERROR = "Video analysis error: ";
+        private const string FFMPEG_NOT_FOUND = "ffmpeg not found in PATH";
+        private const string FFMPEG_CHECK_FAILED = "ffmpeg check failed";
+        private const string FRAME_FILE_PATTERN = "frame_*.jpg";
+        private const string FFPROBE_ARGS = "-v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1:noinfer_types=0 \"{0}\"";
+        private const string DEFAULT_DURATION = "0";
+        private const char QUOTE = '"';
+        private const string FPS_FORMAT = "fps=1/{0}";
+        private const string VIDEO_FILTER_FORMAT = "-i \"{0}\" -vf \"{1}\" -q:v {2} \"{3}\"";
+
         private readonly string _basePath;
         private readonly IChatClient _chatClient;
         private readonly string _visionModelName;
@@ -37,7 +63,7 @@ namespace Alissa.Core.Services
             _frameIntervalSeconds = frameIntervalSeconds;
             _maxFramesPerVideo = maxFramesPerVideo;
             _frameQuality = frameQuality;
-            _tempDirectory = Path.Combine(basePath, "temp", "frames");
+            _tempDirectory = Path.Combine(basePath, TEMP_FRAMES_DIR, FRAMES_SUBDIR);
         }
 
         /// <summary>
@@ -49,65 +75,63 @@ namespace Alissa.Core.Services
             {
                 Directory.CreateDirectory(_tempDirectory);
 
-                // Save video to temp file
-                string videoPath = Path.Combine(_tempDirectory, $"video_{Guid.NewGuid()}.tmp");
-                using (var fileStream = File.Create(videoPath))
+                string videoPath = Path.Combine(_tempDirectory, VIDEO_PREFIX + Guid.NewGuid() + TEMP_EXTENSION);
+                using (FileStream fileStream = File.Create(videoPath))
                 {
                     await videoStream.CopyToAsync(fileStream, ct);
                 }
 
-                // Extract frames
-                var framePaths = await ExtractFramesAsync(videoPath, ct);
+                List<string> framePaths = await ExtractFramesAsync(videoPath, ct);
 
-                // Clean up video
                 File.Delete(videoPath);
 
-                if (framePaths.Count == 0)
+                bool hasFrames = framePaths.Count > 0;
+                if (!hasFrames)
                 {
-                    _lastAnalysis = "No frames could be extracted from the video.";
+                    _lastAnalysis = NO_FRAMES_MSG;
                     return _lastAnalysis;
                 }
 
-                // Analyze each frame
-                var descriptions = new StringBuilder();
-                var result = string.Empty;
-                if (framePaths.Count > 0)
+                StringBuilder descriptions = new StringBuilder();
+                string result = string.Empty;
+
+                for (int i = 0; i < framePaths.Count; i++)
                 {
-                    for (int i = 0; i < framePaths.Count; i++)
+                    bool isCancelled = ct.IsCancellationRequested;
+                    if (isCancelled)
                     {
-                        if (ct.IsCancellationRequested)
-                        {
-                            break;
-                        }
-
-                        try
-                        {
-                            byte[] frameBytes = await File.ReadAllBytesAsync(framePaths[i], ct);
-                            string description = await AnalyzeFrameAsync(frameBytes, $"Frame {i + 1}/{framePaths.Count}", ct);
-                            descriptions.AppendLine(description);
-                        }
-                        catch (Exception ex)
-                        {
-                            ErrorHandler.Handle(ex, _basePath, false);
-                        }
+                        break;
                     }
 
-                    // Clean up frames
-                    foreach (var framePath in framePaths)
+                    try
                     {
-                        try { File.Delete(framePath); } catch { }
+                        byte[] frameBytes = await File.ReadAllBytesAsync(framePaths[i], ct);
+                        string description = await AnalyzeFrameAsync(frameBytes, string.Format(FRAME_LABEL_FORMAT, i + 1, framePaths.Count), ct);
+                        descriptions.AppendLine(description);
                     }
-
-                    result = descriptions.ToString();
+                    catch (Exception ex)
+                    {
+                        ErrorHandler.Handle(ex, _basePath, false);
+                    }
                 }
 
+                for (int i = 0; i < framePaths.Count; i++)
+                {
+                    try 
+                    { 
+                        File.Delete(framePaths[i]); 
+                    } 
+                    catch { }
+                }
+
+                result = descriptions.ToString();
                 _lastAnalysis = result;
                 return _lastAnalysis;
             }
             catch (Exception ex)
             {
                 ErrorHandler.Handle(ex, _basePath, false);
-                _lastAnalysis = $"Video analysis error: {ex.Message}";
+                _lastAnalysis = VIDEO_ANALYSIS_ERROR + ex.Message;
                 return _lastAnalysis;
             }
         }
@@ -119,38 +143,36 @@ namespace Alissa.Core.Services
         {
             try
             {
-                // Convert image to base64
                 string base64Image = Convert.ToBase64String(frameBytes);
 
-                // Build vision model prompt
-                string visionPrompt = "Describe what is on screen in this frame. Focus on: open applications, visible text, code, errors, or work context. Be concise (2-3 sentences).";
-                if (!string.IsNullOrEmpty(context))
+                string visionPrompt = VISION_PROMPT;
+                bool hasContext = !string.IsNullOrEmpty(context);
+                if (hasContext)
                 {
-                    visionPrompt += $" Context: {context}";
+                    visionPrompt += VISION_CONTEXT_SUFFIX + context;
                 }
 
-                // Call Ollama vision model
-                // Note: This is a simplified approach. Full implementation would use proper Ollama API with vision support
-                var result = new StringBuilder();
-                var hasResult = false;
-                await foreach (var token in _chatClient.StreamAsync(visionPrompt, base64Image))
+                StringBuilder result = new StringBuilder();
+                bool hasResult = false;
+                await foreach (string token in _chatClient.StreamAsync(visionPrompt, base64Image))
                 {
                     result.Append(token);
                     hasResult = true;
-                    if (ct.IsCancellationRequested)
+                    bool isCancelled = ct.IsCancellationRequested;
+                    if (isCancelled)
                     {
                         break;
                     }
                 }
 
-                string analysis = hasResult ? result.ToString() : "No response from vision model";
+                string analysis = hasResult ? result.ToString() : NO_RESPONSE_MSG;
                 _lastAnalysis = analysis;
                 return analysis;
             }
             catch (Exception ex)
             {
                 ErrorHandler.Handle(ex, _basePath, false);
-                return $"Frame analysis error: {ex.Message}";
+                return FRAME_ANALYSIS_ERROR + ex.Message;
             }
         }
 
@@ -164,66 +186,70 @@ namespace Alissa.Core.Services
         /// </summary>
         private async Task<List<string>> ExtractFramesAsync(string videoPath, CancellationToken ct = default)
         {
-            var framePaths = new List<string>();
+            List<string> framePaths = new List<string>();
 
             try
             {
-                // Check if ffmpeg is available
-                var ffmpegCheck = new ProcessStartInfo
+                ProcessStartInfo ffmpegCheck = new ProcessStartInfo
                 {
-                    FileName = "ffmpeg",
-                    Arguments = "-version",
+                    FileName = FFMPEG_EXECUTABLE,
+                    Arguments = VERSION_ARG,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     CreateNoWindow = true
                 };
 
-                var processResult = string.Empty;
-                using (var process = Process.Start(ffmpegCheck))
+                string processResult = string.Empty;
+                using (Process? process = Process.Start(ffmpegCheck))
                 {
-                    if (process == null)
+                    bool processIsNull = process == null;
+                    if (processIsNull)
                     {
-                        ErrorHandler.Handle(new InvalidOperationException("ffmpeg not found in PATH"), _basePath, false);
+                        ErrorHandler.Handle(new InvalidOperationException(FFMPEG_NOT_FOUND), _basePath, false);
                         return framePaths;
                     }
 
                     await process.WaitForExitAsync(ct);
-                    if (process.ExitCode != 0)
+                    bool checkFailed = process.ExitCode != 0;
+                    if (checkFailed)
                     {
-                        ErrorHandler.Handle(new InvalidOperationException("ffmpeg check failed"), _basePath, false);
+                        ErrorHandler.Handle(new InvalidOperationException(FFMPEG_CHECK_FAILED), _basePath, false);
                         return framePaths;
                     }
                 }
 
-                // Get video duration and calculate frame extraction
-                string framePattern = Path.Combine(_tempDirectory, $"frame_%04d.jpg");
+                string framePattern = Path.Combine(_tempDirectory, string.Format(FRAME_PATTERN_FORMAT, "%04d"));
                 string duration = await GetVideoDurationAsync(videoPath, ct);
 
-                // Extract frames at regular intervals
-                var extractProcess = new ProcessStartInfo
+                string fpsFilter = string.Format(FPS_FORMAT, _frameIntervalSeconds);
+                string videoFilterArgs = string.Format(VIDEO_FILTER_FORMAT, videoPath, fpsFilter, _frameQuality, framePattern);
+
+                ProcessStartInfo extractProcess = new ProcessStartInfo
                 {
-                    FileName = "ffmpeg",
-                    Arguments = $"-i \"{videoPath}\" -vf \"fps=1/{_frameIntervalSeconds}\" -q:v {_frameQuality} \"{framePattern}\"",
+                    FileName = FFMPEG_EXECUTABLE,
+                    Arguments = videoFilterArgs,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     CreateNoWindow = true
                 };
 
-                using (var process = Process.Start(extractProcess))
+                using (Process? process = Process.Start(extractProcess))
                 {
-                    if (process != null)
+                    bool processNotNull = process != null;
+                    if (processNotNull)
                     {
                         await process.WaitForExitAsync(ct);
 
-                        if (process.ExitCode == 0)
+                        bool extractSucceeded = process.ExitCode == 0;
+                        if (extractSucceeded)
                         {
-                            // Collect generated frames
-                            var frameDir = new DirectoryInfo(_tempDirectory);
-                            var frames = frameDir.GetFiles("frame_*.jpg");
+                            DirectoryInfo frameDir = new DirectoryInfo(_tempDirectory);
+                            FileInfo[] frames = frameDir.GetFiles(FRAME_FILE_PATTERN);
 
-                            var frameResult = new List<string>();
-                            for (int i = 0; i < Math.Min(frames.Length, _maxFramesPerVideo); i++)
+                            List<string> frameResult = new List<string>();
+                            int maxFrames = Math.Min(frames.Length, _maxFramesPerVideo);
+                            for (int i = 0; i < maxFrames; i++)
                             {
                                 frameResult.Add(frames[i].FullName);
                             }
@@ -248,23 +274,25 @@ namespace Alissa.Core.Services
         {
             try
             {
-                var process = new ProcessStartInfo
+                string ffprobeArgs = string.Format(FFPROBE_ARGS, videoPath);
+                ProcessStartInfo process = new ProcessStartInfo
                 {
-                    FileName = "ffprobe",
-                    Arguments = $"-v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1:noinfer_types=0 \"{videoPath}\"",
+                    FileName = FFPROBE_EXECUTABLE,
+                    Arguments = ffprobeArgs,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     CreateNoWindow = true
                 };
 
-                var result = string.Empty;
-                using (var p = Process.Start(process))
+                string result = string.Empty;
+                using (Process? p = Process.Start(process))
                 {
-                    if (p != null)
+                    bool processNotNull = p != null;
+                    if (processNotNull)
                     {
                         string? duration = await p.StandardOutput.ReadLineAsync(ct);
                         await p.WaitForExitAsync(ct);
-                        result = duration ?? "0";
+                        result = duration ?? DEFAULT_DURATION;
                     }
                 }
 
@@ -272,8 +300,7 @@ namespace Alissa.Core.Services
             }
             catch
             {
-                // ffprobe not available
-                return "0";
+                return DEFAULT_DURATION;
             }
         }
     }

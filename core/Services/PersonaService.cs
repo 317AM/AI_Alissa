@@ -12,6 +12,10 @@ namespace Alissa.Core.Services
     /// </summary>
     public static class PersonaService
     {
+        // Constants
+        private const string CONFIG_DIR = "config";
+        private const string PERSONA_FILE = "persona.json";
+
         private static readonly JsonSerializerOptions _json = new()
         {
             WriteIndented = true,
@@ -30,19 +34,26 @@ namespace Alissa.Core.Services
         {
             try
             {
-                string personaPath = Path.Combine(basePath, "config", "persona.json");
+                string personaPath = Path.Combine(basePath, CONFIG_DIR, PERSONA_FILE);
                 PersonaModel? persona = null;
 
-                if (File.Exists(personaPath))
+                bool fileExists = File.Exists(personaPath);
+                if (fileExists)
                 {
                     string json = await File.ReadAllTextAsync(personaPath);
                     persona = JsonSerializer.Deserialize<PersonaModel>(json, _json);
                 }
 
-                persona ??= new PersonaModel();
+                bool hasPersona = persona != null;
+                if (!hasPersona)
+                {
+                    persona = new PersonaModel();
+                }
+
+                string fileName = Path.GetFileName(filePath);
                 persona.CurrentCode = new CodeContext
                 {
-                    Name = Path.GetFileName(filePath),
+                    Name = fileName,
                     Language = language,
                     Task = task
                 };
@@ -63,17 +74,19 @@ namespace Alissa.Core.Services
         {
             try
             {
-                string personaPath = Path.Combine(basePath, "config", "persona.json");
+                string personaPath = Path.Combine(basePath, CONFIG_DIR, PERSONA_FILE);
 
-                if (!File.Exists(personaPath))
+                bool fileExists = File.Exists(personaPath);
+                if (!fileExists)
                 {
                     return null;
                 }
 
                 string json = await File.ReadAllTextAsync(personaPath);
-                var persona = JsonSerializer.Deserialize<PersonaModel>(json, _json);
+                PersonaModel? persona = JsonSerializer.Deserialize<PersonaModel>(json, _json);
 
-                return persona?.CurrentCode;
+                CodeContext? result = persona?.CurrentCode;
+                return result;
             }
             catch (Exception ex)
             {
@@ -89,16 +102,22 @@ namespace Alissa.Core.Services
         {
             try
             {
-                string personaPath = Path.Combine(basePath, "config", "persona.json");
+                string personaPath = Path.Combine(basePath, CONFIG_DIR, PERSONA_FILE);
                 PersonaModel? persona = null;
 
-                if (File.Exists(personaPath))
+                bool fileExists = File.Exists(personaPath);
+                if (fileExists)
                 {
                     string json = await File.ReadAllTextAsync(personaPath);
                     persona = JsonSerializer.Deserialize<PersonaModel>(json, _json);
                 }
 
-                persona ??= new PersonaModel();
+                bool hasPersona = persona != null;
+                if (!hasPersona)
+                {
+                    persona = new PersonaModel();
+                }
+
                 persona.CurrentUser = new UserContext
                 {
                     Name = userName
@@ -120,15 +139,17 @@ namespace Alissa.Core.Services
         {
             try
             {
-                string personaPath = Path.Combine(basePath, "config", "persona.json");
+                string personaPath = Path.Combine(basePath, CONFIG_DIR, PERSONA_FILE);
 
-                if (!File.Exists(personaPath))
+                bool fileExists = File.Exists(personaPath);
+                if (!fileExists)
                 {
                     return null;
                 }
 
                 string json = await File.ReadAllTextAsync(personaPath);
-                return JsonSerializer.Deserialize<PersonaModel>(json, _json);
+                PersonaModel? result = JsonSerializer.Deserialize<PersonaModel>(json, _json);
+                return result;
             }
             catch (Exception ex)
             {

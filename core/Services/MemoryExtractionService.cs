@@ -13,58 +13,12 @@ namespace Alissa.Core.Services
     /// </summary>
     public class MemoryExtractionService
     {
-        private readonly IChatClient _chatClient;
-        private readonly IPromptBuilder _promptBuilder;
-
-        public MemoryExtractionService(IChatClient chatClient, IPromptBuilder promptBuilder)
-        {
-            _chatClient = chatClient;
-            _promptBuilder = promptBuilder;
-        }
-
-        /// <summary>
-        /// Extracts memory from a conversation summary.
-        /// Returns a result object even if extraction is incomplete.
-        /// </summary>
-        /// <param name="conversationSummary">Summary text to extract from</param>
-        /// <returns>MemoryExtractionResult with whatever was successfully extracted</returns>
-        public async Task<MemoryExtractionResult> ExtractMemoryAsync(string conversationSummary)
-        {
-            MemoryExtractionResult result = new MemoryExtractionResult();
-            {
-                bool summaryIsValid = !string.IsNullOrWhiteSpace(conversationSummary);
-                {
-                    if (summaryIsValid)
-                    {
-                        result = await AttemptExtraction(conversationSummary);
-                    }
-                }
-            }
-            return result;
-        }
-
-        private async Task<MemoryExtractionResult> AttemptExtraction(string conversationSummary)
-        {
-            string extractionPrompt = BuildExtractionPrompt(conversationSummary);
-            string systemPrompt = _promptBuilder.BuildSystemPrompt();
-
-            var sb = new System.Text.StringBuilder();
-
-            await foreach (var token in _chatClient.StreamAsync(systemPrompt, extractionPrompt))
-            {
-                sb.Append(token);
-            }
-
-            string response = sb.ToString().Trim();
-
-            var extracted = ParseExtractionResponse(response);
-
-            return extracted;
-        }
-
-        private static string BuildExtractionPrompt(string conversationSummary)
-        {
-            return @"Based on the following conversation summary, extract structured memory in JSON format.
+        // Constants
+        private const string USER_PROFILE_KEY = "user_profile";
+        private const string FACTS_KEY = "facts";
+        private const string SKILLS_KEY = "skills";
+        private const string LEARNINGS_KEY = "system_learnings";
+        private const string EXTRACTION_PROMPT = @"Based on the following conversation summary, extract structured memory in JSON format.
 Return ONLY valid JSON, no other text.
 
 Extract into these categories:
@@ -92,103 +46,143 @@ Example JSON structure:
 }
 
 Conversation Summary:
-" + conversationSummary;
+";
+
+        private readonly IChatClient _chatClient;
+        private readonly IPromptBuilder _promptBuilder;
+
+        public MemoryExtractionService(IChatClient chatClient, IPromptBuilder promptBuilder)
+        {
+            _chatClient = chatClient;
+            _promptBuilder = promptBuilder;
+        }
+
+        /// <summary>
+        /// Extracts memory from a conversation summary.
+        /// Returns a result object even if extraction is incomplete.
+        /// </summary>
+        /// <param name="conversationSummary">Summary text to extract from</param>
+        /// <returns>MemoryExtractionResult with whatever was successfully extracted</returns>
+        public async Task<MemoryExtractionResult> ExtractMemoryAsync(string conversationSummary)
+        {
+            bool summaryIsValid = !string.IsNullOrWhiteSpace(conversationSummary);
+            if (!summaryIsValid)
+            {
+                return new MemoryExtractionResult();
+            }
+
+            MemoryExtractionResult result = await AttemptExtraction(conversationSummary);
+            return result;
+        }
+
+        private async Task<MemoryExtractionResult> AttemptExtraction(string conversationSummary)
+        {
+            string extractionPrompt = BuildExtractionPrompt(conversationSummary);
+            string systemPrompt = _promptBuilder.BuildSystemPrompt();
+
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+
+            await foreach (string token in _chatClient.StreamAsync(systemPrompt, extractionPrompt))
+            {
+                sb.Append(token);
+            }
+
+            string response = sb.ToString().Trim();
+            MemoryExtractionResult extracted = ParseExtractionResponse(response);
+
+            return extracted;
+        }
+
+        private static string BuildExtractionPrompt(string conversationSummary)
+        {
+            string fullPrompt = EXTRACTION_PROMPT + conversationSummary;
+            return fullPrompt;
         }
 
         private static MemoryExtractionResult ParseExtractionResponse(string response)
         {
-            var result = new MemoryExtractionResult();
+            MemoryExtractionResult result = new MemoryExtractionResult();
+
+            bool responseIsValid = !string.IsNullOrWhiteSpace(response);
+            if (!responseIsValid)
             {
-                bool responseIsValid = !string.IsNullOrWhiteSpace(response);
+                return result;
+            }
+
+            try
+            {
+                JsonElement json = JsonSerializer.Deserialize<JsonElement>(response);
+
+                bool isObject = json.ValueKind == JsonValueKind.Object;
+                if (!isObject)
                 {
-                    if (responseIsValid)
-                    {
-                        try
-                        {
-                            var json = JsonSerializer.Deserialize<JsonElement>(response);
+                    return result;
+                }
 
-                            bool isObject = json.ValueKind == JsonValueKind.Object;
-                            {
-                                if (isObject)
-                                {
-                                    bool hasUserProfile = json.TryGetProperty("user_profile", out var userProfile) 
-                                        && userProfile.ValueKind == JsonValueKind.Object;
-                                    {
-                                        if (hasUserProfile)
-                                        {
-                                            result.UserProfile = ParseDictionary(userProfile);
-                                        }
-                                    }
+                bool hasUserProfile = json.TryGetProperty(USER_PROFILE_KEY, out JsonElement userProfile) 
+                    && userProfile.ValueKind == JsonValueKind.Object;
+                if (hasUserProfile)
+                {
+                    result.UserProfile = ParseDictionary(userProfile);
+                }
 
-                                    bool hasFacts = json.TryGetProperty("facts", out var facts) 
-                                        && facts.ValueKind == JsonValueKind.Object;
-                                    {
-                                        if (hasFacts)
-                                        {
-                                            result.Facts = ParseDictionary(facts);
-                                        }
-                                    }
+                bool hasFacts = json.TryGetProperty(FACTS_KEY, out JsonElement facts) 
+                    && facts.ValueKind == JsonValueKind.Object;
+                if (hasFacts)
+                {
+                    result.Facts = ParseDictionary(facts);
+                }
 
-                                    bool hasSkills = json.TryGetProperty("skills", out var skills) 
-                                        && skills.ValueKind == JsonValueKind.Object;
-                                    {
-                                        if (hasSkills)
-                                        {
-                                            result.Skills = ParseDictionary(skills);
-                                        }
-                                    }
+                bool hasSkills = json.TryGetProperty(SKILLS_KEY, out JsonElement skills) 
+                    && skills.ValueKind == JsonValueKind.Object;
+                if (hasSkills)
+                {
+                    result.Skills = ParseDictionary(skills);
+                }
 
-                                    bool hasLearnings = json.TryGetProperty("system_learnings", out var learnings) 
-                                        && learnings.ValueKind == JsonValueKind.Object;
-                                    {
-                                        if (hasLearnings)
-                                        {
-                                            result.SystemLearnings = ParseDictionary(learnings);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        catch
-                        {
-                            // Result remains empty on parse failure
-                        }
-                    }
+                bool hasLearnings = json.TryGetProperty(LEARNINGS_KEY, out JsonElement learnings) 
+                    && learnings.ValueKind == JsonValueKind.Object;
+                if (hasLearnings)
+                {
+                    result.SystemLearnings = ParseDictionary(learnings);
                 }
             }
+            catch
+            {
+                // Result remains empty on parse failure
+            }
+
             return result;
         }
 
         private static Dictionary<string, string> ParseDictionary(JsonElement element)
         {
-            var dict = new Dictionary<string, string>();
-            {
-                bool isObject = element.ValueKind == JsonValueKind.Object;
-                {
-                    if (isObject)
-                    {
-                        foreach (var property in element.EnumerateObject())
-                        {
-                            string key = property.Name;
-                            string value = property.Value.ValueKind switch
-                            {
-                                JsonValueKind.String => property.Value.GetString() ?? string.Empty,
-                                JsonValueKind.Object => JsonSerializer.Serialize(property.Value),
-                                JsonValueKind.Array => JsonSerializer.Serialize(property.Value),
-                                _ => property.Value.ToString()
-                            };
+            Dictionary<string, string> dict = new Dictionary<string, string>();
 
-                            bool valueIsNotEmpty = !string.IsNullOrWhiteSpace(value);
-                            {
-                                if (valueIsNotEmpty)
-                                {
-                                    dict[key] = value;
-                                }
-                            }
-                        }
-                    }
+            bool isObject = element.ValueKind == JsonValueKind.Object;
+            if (!isObject)
+            {
+                return dict;
+            }
+
+            foreach (JsonProperty property in element.EnumerateObject())
+            {
+                string key = property.Name;
+                string value = property.Value.ValueKind switch
+                {
+                    JsonValueKind.String => property.Value.GetString() ?? string.Empty,
+                    JsonValueKind.Object => JsonSerializer.Serialize(property.Value),
+                    JsonValueKind.Array => JsonSerializer.Serialize(property.Value),
+                    _ => property.Value.ToString()
+                };
+
+                bool valueIsNotEmpty = !string.IsNullOrWhiteSpace(value);
+                if (valueIsNotEmpty)
+                {
+                    dict[key] = value;
                 }
             }
+
             return dict;
         }
     }

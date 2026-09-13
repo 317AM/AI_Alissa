@@ -3,6 +3,12 @@ using System.Text.Json;
 
 public static class ConfigService
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        WriteIndented = true
+    };
+
     /// <summary>
     /// Loads all configuration files and merges them into a single AppConfig object.
     /// </summary>
@@ -30,7 +36,7 @@ public static class ConfigService
                     return new T();
                 }
 
-                T? obj = JsonSerializer.Deserialize<T>(json);
+                T? obj = JsonSerializer.Deserialize<T>(json, JsonOptions);
                 return obj ?? new T();
             }
             catch
@@ -51,7 +57,7 @@ public static class ConfigService
             if (string.IsNullOrWhiteSpace(json))
                 throw new Exception($"{file} empty.");
 
-            T? obj = JsonSerializer.Deserialize<T>(json);
+            T? obj = JsonSerializer.Deserialize<T>(json, JsonOptions);
 
             if (obj == null)
                 throw new Exception($"{file} invalid.");
@@ -59,7 +65,7 @@ public static class ConfigService
             return obj;
         }
 
-        return new AppConfig
+        AppConfig result = new AppConfig
         {
             Model = LoadRequired<ConfigModel>("model.json"),
             Settings = LoadRequired<SettingsModel>("settings.json"),
@@ -68,7 +74,20 @@ public static class ConfigService
             PromptRules = Load<PromptRulesModel>("prompt_rules.json"),
             PersonalityRules = Load<PersonalityRulesModel>("personality_rules.json"),
             IndexingRules = Load<IndexingRulesModel>("indexing_rules.json"),
-            Logging = Load<LoggingModel>("logging.json")
+            Logging = Load<LoggingModel>("logging.json"),
+            Speech = Load<SpeechConfig>("speech.json"),
+            Api = Load<ApiConfig>("api.json")
         };
+
+        // Resolve relative paths for STT and TTS models
+        bool modelValid = result.Model != null;
+        if (modelValid)
+        {
+            result.Model.Stt.ResolveAgainst(basePath);
+            result.Model.Tts.ResolveAgainst(basePath);
+        }
+
+        return result;
     }
 }
+

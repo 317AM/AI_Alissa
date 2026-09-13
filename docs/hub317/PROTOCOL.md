@@ -6,8 +6,9 @@ Alissa communicates with Hub317 via WebSocket at `ws://localhost:317/ws/alissa` 
 
 ## Inbound Contract (User to Alissa)
 
-Hub317 sends JSON messages with the following structure:
+Hub317 sends JSON messages. Alissa accepts the following formats:
 
+### Text Input (Original)
 ```json
 {
   "role": "user",
@@ -16,20 +17,51 @@ Hub317 sends JSON messages with the following structure:
 }
 ```
 
-### Fields:
+**Fields:**
 - **role** (string): Always "user" for messages from the user
 - **content** (string): The user's message text
-- **userName** (string, optional): Username to inject into Alissa's user context. If provided, Alissa will use this name in the conversation and prompt injection.
-
-Additional optional fields (from Hub317's extended contract):
+- **userName** (string, optional): Username for user context injection
 - **systemPrompt** (string, optional): Custom system prompt override
 - **history** (array, optional): Conversation history for context
 
+### Audio Input (NEW)
+Hub317 can send audio in two ways:
+
+#### JSON Audio Message
+```json
+{
+  "type": "audio",
+  "role": "user",
+  "content": "SUQzBAAAI1NORQU...",
+  "format": "wav",
+  "userName": "jackson"
+}
+```
+
+**Fields:**
+- **type** (string): "audio" to indicate audio input
+- **role** (string): Always "user"
+- **content** (string): Base64-encoded WAV audio data
+- **format** (string): Audio format (currently "wav" only)
+- **userName** (string, optional): Username for context
+
+#### Binary Audio (Alternative)
+Alissa also accepts raw WAV data as binary WebSocket frames. Frames are automatically assembled until `EndOfMessage` is set.
+
+**Processing:**
+1. Alissa receives and decodes the audio
+2. Transcribes via Whisper STT to obtain transcript text
+3. Sends a `transcript` message back to Hub (see Outbound Contract below)
+4. Streams the response as text
+5. If TTS is enabled, sends an `audio_chunk` with the response audio
+
 ## Outbound Contract (Alissa to Hub317)
 
-Alissa streams responses in chunks using standardized message types.
+Alissa streams responses in chunks using standardized message types. When TTS is enabled, audio is also sent.
 
-### Stream Start
+### Text Response Stream
+
+**Stream Start**
 Sent when Alissa begins generating a response:
 ```json
 {
@@ -38,7 +70,7 @@ Sent when Alissa begins generating a response:
 }
 ```
 
-### Stream Chunk
+**Stream Chunk**
 Sent for each token in the response:
 ```json
 {
@@ -47,8 +79,8 @@ Sent for each token in the response:
 }
 ```
 
-### Stream End
-Sent when the response is complete:
+**Stream End**
+Sent when the response text is complete:
 ```json
 {
   "type": "stream_end",
@@ -56,8 +88,37 @@ Sent when the response is complete:
 }
 ```
 
-### Complete Message
-Sent for non-streamed responses (e.g., command results):
+### Transcript Notice (NEW)
+**Only sent if audio input was received.** Sent immediately after transcription, before the response stream:
+```json
+{
+  "type": "transcript",
+  "role": "user",
+  "content": "what can you tell me about async"
+}
+```
+
+This message notifies Hub of what was heard from the audio. Hub can use this to display to the user that their speech was understood.
+
+### Audio Response (NEW)
+**Only sent if TTS is enabled.** Sent after the response stream completes, containing base64-encoded WAV audio:
+```json
+{
+  "type": "audio_chunk",
+  "role": "assistant",
+  "content": "SUQzBAAAI1NORQU..."
+}
+```
+
+**Fields:**
+- **type** (string): "audio_chunk"
+- **role** (string): "assistant"
+- **content** (string): Base64-encoded WAV audio (mono or stereo, 16000 Hz recommended)
+
+The WAV data is the synthesized speech from Piper TTS, pitched up according to config. Clients decode and queue for playback.
+
+### Complete Message (Non-Streamed)
+Sent for command results and errors:
 ```json
 {
   "type": "message",
@@ -65,6 +126,17 @@ Sent for non-streamed responses (e.g., command results):
   "content": "Command executed successfully"
 }
 ```
+
+### Response Flow with Audio
+
+When both STT and TTS are enabled, the order is:
+
+1. **Audio Received** (user sends audio)
+2. **transcript** message (what was heard)
+3. **stream_start** (response generation begins)
+4. **stream_chunk** × N (response text tokens)
+5. **stream_end** (response complete)
+6. **audio_chunk** (response audio, if TTS enabled)
 
 ## Configuration
 

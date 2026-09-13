@@ -54,5 +54,75 @@
     "Timestamp": "2026-06-13T22:25:02.7011223+02:00",
     "Relevance": 0.85,
     "IsCoreMemory": false
+  },
+  {
+    "Key": "Code critique",
+    "Value": "Expressing preference for C# over Python with playful warnings about performance",
+    "Timestamp": "2026-07-28T20:06:30.9439266+02:00",
+    "Relevance": 0.85,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "Humor in technical discussions",
+    "Value": "Using teasing and personality-driven critiques during code-related conversations",
+    "Timestamp": "2026-07-28T20:06:30.9451135+02:00",
+    "Relevance": 0.85,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "technique",
+    "Value": "Balancing curiosity/teasing with casual conversation flow",
+    "Timestamp": "2026-09-10T17:51:19.0148704+02:00",
+    "Relevance": 0.85,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "technique",
+    "Value": "humor-balanced technical guidance, C# references",
+    "Timestamp": "2026-09-10T17:58:11.336757+02:00",
+    "Relevance": 0.85,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "technique",
+    "Value": "C# expertise, roleplay avoidance, literal output maintenance",
+    "Timestamp": "2026-09-10T19:13:08.3241328+02:00",
+    "Relevance": 0.85,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "technique",
+    "Value": "Code-centric banter, config adjustments, technical humor for system stability",
+    "Timestamp": "2026-09-10T19:16:51.5069248+02:00",
+    "Relevance": 0.85,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "technique",
+    "Value": "Probing for config details, using code preferences to guide troubleshooting",
+    "Timestamp": "2026-09-10T19:22:09.0281703+02:00",
+    "Relevance": 0.85,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "technique",
+    "Value": "Config troubleshooting for C#-optimized setups",
+    "Timestamp": "2026-09-10T19:39:01.830984+02:00",
+    "Relevance": 0.85,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "technique",
+    "Value": "Engine parameter tuning for voice modulation",
+    "Timestamp": "2026-09-10T19:55:42.2490063+02:00",
+    "Relevance": 0.85,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "technique",
+    "Value": "C# configuration tuning, playful nonverbal cues (meows)",
+    "Timestamp": "2026-09-13T15:51:07.318729+02:00",
+    "Relevance": 0.85,
+    "IsCoreMemory": false
   }
 ]

@@ -14,14 +14,25 @@ namespace Alissa.Core.Services
     /// </summary>
     public class MediumTermMemoryService
     {
+        // Constants
+        private const string MEMORY_DIR = "memory";
+        private const string MEDIUM_TERM_DIR = "medium_term";
+        private const string RECENT_CONTEXT_FILE = "recent_context.json";
+        private const int DEFAULT_MAX_ENTRIES = 50;
+        private const int DEFAULT_MAX_COUNT = 5;
+        private const int DEFAULT_RECENT_COUNT = 3;
+        private const int DEFAULT_HOURS_BACK = 24;
+        private const double MIN_RELEVANCE = 0.0;
+        private const double MAX_RELEVANCE = 1.0;
+
         private readonly string _mediumTermDir;
         private readonly int _maxEntries;
         private readonly bool _enabled;
 
-        public MediumTermMemoryService(string basePath, int maxEntries = 50, bool enabled = true)
+        public MediumTermMemoryService(string basePath, int maxEntries = DEFAULT_MAX_ENTRIES, bool enabled = true)
         {
-            string memoryDir = Path.Combine(basePath, "memory");
-            _mediumTermDir = Path.Combine(memoryDir, "medium_term");
+            string memoryDir = Path.Combine(basePath, MEMORY_DIR);
+            _mediumTermDir = Path.Combine(memoryDir, MEDIUM_TERM_DIR);
             _maxEntries = maxEntries;
             _enabled = enabled;
 
@@ -31,7 +42,7 @@ namespace Alissa.Core.Services
         /// <summary>
         /// Gets the file path for medium-term memory storage.
         /// </summary>
-        private string MemoryFilePath => Path.Combine(_mediumTermDir, "recent_context.json");
+        private string MemoryFilePath => Path.Combine(_mediumTermDir, RECENT_CONTEXT_FILE);
 
         /// <summary>
         /// Saves a new medium-term memory entry.
@@ -43,7 +54,7 @@ namespace Alissa.Core.Services
                 return;
             }
 
-            var entries = LoadEntries();
+            List<MediumTermMemoryEntry> entries = LoadEntries();
 
             entries.Add(entry);
 
@@ -64,7 +75,8 @@ namespace Alissa.Core.Services
 
             string filePath = MemoryFilePath;
 
-            if (!File.Exists(filePath))
+            bool fileExists = File.Exists(filePath);
+            if (!fileExists)
             {
                 return new List<MediumTermMemoryEntry>();
             }
@@ -73,13 +85,15 @@ namespace Alissa.Core.Services
             {
                 string json = File.ReadAllText(filePath);
 
-                if (string.IsNullOrWhiteSpace(json))
+                bool jsonIsEmpty = string.IsNullOrWhiteSpace(json);
+                if (jsonIsEmpty)
                 {
                     return new List<MediumTermMemoryEntry>();
                 }
 
-                var entries = JsonSerializer.Deserialize<List<MediumTermMemoryEntry>>(json);
-                return entries ?? new List<MediumTermMemoryEntry>();
+                List<MediumTermMemoryEntry>? entries = JsonSerializer.Deserialize<List<MediumTermMemoryEntry>>(json);
+                List<MediumTermMemoryEntry> result = entries ?? new List<MediumTermMemoryEntry>();
+                return result;
             }
             catch
             {
@@ -90,31 +104,35 @@ namespace Alissa.Core.Services
         /// <summary>
         /// Gets the most relevant medium-term memories based on relevance score and recency.
         /// </summary>
-        public List<MediumTermMemoryEntry> GetRelevantEntries(int maxCount = 5)
+        public List<MediumTermMemoryEntry> GetRelevantEntries(int maxCount = DEFAULT_MAX_COUNT)
         {
-            var entries = LoadEntries();
+            List<MediumTermMemoryEntry> entries = LoadEntries();
 
-            return entries
+            List<MediumTermMemoryEntry> result = entries
                 .OrderByDescending(e => e.RelevanceScore)
                 .ThenByDescending(e => e.Timestamp)
                 .Take(maxCount)
                 .ToList();
+
+            return result;
         }
 
         /// <summary>
         /// Gets recent memories by time.
         /// </summary>
-        public List<MediumTermMemoryEntry> GetRecentEntries(int maxCount = 3, int hoursBack = 24)
+        public List<MediumTermMemoryEntry> GetRecentEntries(int maxCount = DEFAULT_RECENT_COUNT, int hoursBack = DEFAULT_HOURS_BACK)
         {
-            var cutoffTime = DateTime.UtcNow.AddHours(-hoursBack);
+            DateTime cutoffTime = DateTime.UtcNow.AddHours(-hoursBack);
 
-            var entries = LoadEntries();
+            List<MediumTermMemoryEntry> entries = LoadEntries();
 
-            return entries
+            List<MediumTermMemoryEntry> result = entries
                 .Where(e => e.Timestamp >= cutoffTime)
                 .OrderByDescending(e => e.Timestamp)
                 .Take(maxCount)
                 .ToList();
+
+            return result;
         }
 
         /// <summary>
@@ -122,13 +140,15 @@ namespace Alissa.Core.Services
         /// </summary>
         public List<MediumTermMemoryEntry> GetEntriesByTag(string tag, int maxCount = 10)
         {
-            var entries = LoadEntries();
+            List<MediumTermMemoryEntry> entries = LoadEntries();
 
-            return entries
+            List<MediumTermMemoryEntry> result = entries
                 .Where(e => e.Tags.Contains(tag, StringComparer.OrdinalIgnoreCase))
                 .OrderByDescending(e => e.RelevanceScore)
                 .Take(maxCount)
                 .ToList();
+
+            return result;
         }
 
         /// <summary>
@@ -136,13 +156,15 @@ namespace Alissa.Core.Services
         /// </summary>
         public List<MediumTermMemoryEntry> GetEntriesByTopic(string topic, int maxCount = 10)
         {
-            var entries = LoadEntries();
+            List<MediumTermMemoryEntry> entries = LoadEntries();
 
-            return entries
+            List<MediumTermMemoryEntry> result = entries
                 .Where(e => e.Topics.Any(t => t.Contains(topic, StringComparison.OrdinalIgnoreCase)))
                 .OrderByDescending(e => e.RelevanceScore)
                 .Take(maxCount)
                 .ToList();
+
+            return result;
         }
 
         /// <summary>
@@ -150,11 +172,11 @@ namespace Alissa.Core.Services
         /// </summary>
         public void PruneOlderThan(int days)
         {
-            var entries = LoadEntries();
+            List<MediumTermMemoryEntry> entries = LoadEntries();
 
-            var cutoffTime = DateTime.UtcNow.AddDays(-days);
+            DateTime cutoffTime = DateTime.UtcNow.AddDays(-days);
 
-            var remaining = entries
+            List<MediumTermMemoryEntry> remaining = entries
                 .Where(e => e.Timestamp >= cutoffTime)
                 .ToList();
 
@@ -166,13 +188,13 @@ namespace Alissa.Core.Services
         /// </summary>
         public void UpdateRelevance(string sessionId, double newRelevance)
         {
-            var entries = LoadEntries();
+            List<MediumTermMemoryEntry> entries = LoadEntries();
 
-            var entry = entries.FirstOrDefault(e => e.SessionId == sessionId);
+            MediumTermMemoryEntry? entry = entries.FirstOrDefault(e => e.SessionId == sessionId);
 
             if (entry != null)
             {
-                entry.RelevanceScore = Math.Clamp(newRelevance, 0.0, 1.0);
+                entry.RelevanceScore = Math.Clamp(newRelevance, MIN_RELEVANCE, MAX_RELEVANCE);
                 PersistEntries(entries);
             }
         }
@@ -182,7 +204,8 @@ namespace Alissa.Core.Services
         /// </summary>
         public void Clear()
         {
-            if (File.Exists(MemoryFilePath))
+            bool fileExists = File.Exists(MemoryFilePath);
+            if (fileExists)
             {
                 File.Delete(MemoryFilePath);
             }
@@ -190,24 +213,28 @@ namespace Alissa.Core.Services
 
         private void PruneOldEntries(List<MediumTermMemoryEntry> entries)
         {
-            if (entries.Count > _maxEntries)
+            bool needsPruning = entries.Count > _maxEntries;
+            if (!needsPruning)
             {
-                var sorted = entries
-                    .OrderByDescending(e => e.RelevanceScore)
-                    .ThenByDescending(e => e.Timestamp)
-                    .Take(_maxEntries)
-                    .ToList();
-
-                entries.Clear();
-                entries.AddRange(sorted);
+                return;
             }
+
+            List<MediumTermMemoryEntry> sorted = entries
+                .OrderByDescending(e => e.RelevanceScore)
+                .ThenByDescending(e => e.Timestamp)
+                .Take(_maxEntries)
+                .ToList();
+
+            entries.Clear();
+            entries.AddRange(sorted);
         }
 
         private void PersistEntries(List<MediumTermMemoryEntry> entries)
         {
             string filePath = MemoryFilePath;
 
-            string json = JsonSerializer.Serialize(entries, new JsonSerializerOptions { WriteIndented = true });
+            JsonSerializerOptions options = new JsonSerializerOptions { WriteIndented = true };
+            string json = JsonSerializer.Serialize(entries, options);
 
             File.WriteAllText(filePath, json);
         }

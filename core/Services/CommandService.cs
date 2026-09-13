@@ -10,6 +10,9 @@ namespace Alissa.Core.Services
     /// </summary>
     public class CommandService : ICommandService
     {
+        // Constants
+        private const string COMMAND_NOT_FOUND = "Command '{0}' not found";
+
         private readonly Dictionary<string, Func<Dictionary<string, object>, Task<string>>> _commands;
 
         public CommandService()
@@ -28,6 +31,7 @@ namespace Alissa.Core.Services
             }
 
             await Task.CompletedTask;
+            return;
         }
 
         public async Task<string> ExecuteCommandAsync(string name, Dictionary<string, object> parameters)
@@ -36,25 +40,28 @@ namespace Alissa.Core.Services
 
             if (hasCommand)
             {
-                var handler = _commands[name];
+                Func<Dictionary<string, object>, Task<string>> handler = _commands[name];
                 string result = await handler(parameters);
                 return result;
             }
 
-            string errorMessage = $"Command '{name}' not found";
-            return await Task.FromResult(errorMessage);
+            string errorMessage = string.Format(COMMAND_NOT_FOUND, name);
+            string finalResult = await Task.FromResult(errorMessage);
+            return finalResult;
         }
 
         public async Task<List<string>> GetAvailableCommandsAsync()
         {
-            var commands = new List<string>(_commands.Keys);
-            return await Task.FromResult(commands);
+            List<string> commands = new List<string>(_commands.Keys);
+            List<string> result = await Task.FromResult(commands);
+            return result;
         }
 
         public async Task<bool> HasCommandAsync(string name)
         {
             bool hasCommand = _commands.ContainsKey(name);
-            return await Task.FromResult(hasCommand);
+            bool result = await Task.FromResult(hasCommand);
+            return result;
         }
 
         public async Task UnregisterCommandAsync(string name)
@@ -67,6 +74,7 @@ namespace Alissa.Core.Services
             }
 
             await Task.CompletedTask;
+            return;
         }
     }
 }

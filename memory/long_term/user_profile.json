@@ -16,21 +16,21 @@
   {
     "Key": "name",
     "Value": "Jackson",
-    "Timestamp": "2026-06-13T22:25:02.6585591+02:00",
+    "Timestamp": "2026-09-13T15:51:07.3012953+02:00",
     "Relevance": 0.9,
     "IsCoreMemory": false
   },
   {
     "Key": "preference_style",
-    "Value": "prefers C# over Python/JavaScript",
-    "Timestamp": "2026-06-13T22:25:02.6631293+02:00",
+    "Value": "Concise, direct communication with technical focus",
+    "Timestamp": "2026-09-13T15:51:07.3036809+02:00",
     "Relevance": 0.9,
     "IsCoreMemory": false
   },
   {
     "Key": "goal",
-    "Value": "discuss programming language merits and technical trade-offs",
-    "Timestamp": "2026-06-13T22:25:02.6755858+02:00",
+    "Value": "Discuss voice tuning and system configuration",
+    "Timestamp": "2026-09-13T15:51:07.3098389+02:00",
     "Relevance": 0.9,
     "IsCoreMemory": false
   }

@@ -15,6 +15,18 @@ namespace Alissa.Core.Services
     /// </summary>
     public class SemanticMemoryService : ISemanticMemoryService
     {
+        // Constants
+        private const string MEMORY_DIR = "memory";
+        private const string SEMANTIC_SUBDIR = "semantic";
+        private const string JSON_EXTENSION = ".json";
+        private const string JSON_PATTERN = "*.json";
+        private const double BASE_SCORE_FACTOR = 0.1;
+        private const double ACCESS_BONUS_FACTOR = 0.05;
+        private const double MAX_ACCESS_BONUS = 0.3;
+        private const int DAYS_PER_YEAR = 365;
+        private const double MIN_RELEVANCE_SCORE = 0.0;
+        private const double MAX_RELEVANCE_SCORE = 1.0;
+
         private readonly string _basePath;
         private readonly string _memoryPath;
         private List<SemanticMemoryEntry> _cachedMemories;
@@ -22,7 +34,7 @@ namespace Alissa.Core.Services
         public SemanticMemoryService(string basePath)
         {
             _basePath = basePath;
-            _memoryPath = Path.Combine(basePath, "memory", "semantic");
+            _memoryPath = Path.Combine(basePath, MEMORY_DIR, SEMANTIC_SUBDIR);
             _cachedMemories = new List<SemanticMemoryEntry>();
 
             Directory.CreateDirectory(_memoryPath);
@@ -31,7 +43,7 @@ namespace Alissa.Core.Services
 
         public async Task StoreSemanticMemoryAsync(string content, string category, string[] keywords)
         {
-            var entry = new SemanticMemoryEntry
+            SemanticMemoryEntry entry = new SemanticMemoryEntry
             {
                 Content = content,
                 Category = category,
@@ -45,10 +57,10 @@ namespace Alissa.Core.Services
 
         public async Task<List<string>> FindSimilarMemoriesAsync(string query, int count = 5)
         {
-            var normalized = query.ToLower();
-            var queryKeywords = normalized.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            string normalized = query.ToLower();
+            string[] queryKeywords = normalized.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-            var scored = _cachedMemories
+            List<string> scored = _cachedMemories
                 .Select(m => new { Entry = m, Score = CalculateSimilarity(m.Keywords, queryKeywords) })
                 .Where(x => x.Score > 0)
                 .OrderByDescending(x => x.Score)
@@ -61,20 +73,22 @@ namespace Alissa.Core.Services
 
         public async Task LinkMemoriesAsync(string memoryId1, string memoryId2, string relationship)
         {
-            var memory1 = _cachedMemories.FirstOrDefault(m => m.Id == memoryId1);
-            var memory2 = _cachedMemories.FirstOrDefault(m => m.Id == memoryId2);
+            SemanticMemoryEntry? memory1 = _cachedMemories.FirstOrDefault(m => m.Id == memoryId1);
+            SemanticMemoryEntry? memory2 = _cachedMemories.FirstOrDefault(m => m.Id == memoryId2);
 
-            if (memory1 != null && !memory1.RelatedMemoryIds.Contains(memoryId2))
+            bool memory1Exists = memory1 != null;
+            if (memory1Exists && !memory1.RelatedMemoryIds.Contains(memoryId2))
             {
-                var newRelated = memory1.RelatedMemoryIds.ToList();
+                List<string> newRelated = memory1.RelatedMemoryIds.ToList();
                 newRelated.Add(memoryId2);
                 memory1.RelatedMemoryIds = newRelated.ToArray();
                 await PersistMemoryAsync(memory1);
             }
 
-            if (memory2 != null && !memory2.RelatedMemoryIds.Contains(memoryId1))
+            bool memory2Exists = memory2 != null;
+            if (memory2Exists && !memory2.RelatedMemoryIds.Contains(memoryId1))
             {
-                var newRelated = memory2.RelatedMemoryIds.ToList();
+                List<string> newRelated = memory2.RelatedMemoryIds.ToList();
                 newRelated.Add(memoryId1);
                 memory2.RelatedMemoryIds = newRelated.ToArray();
                 await PersistMemoryAsync(memory2);
@@ -85,7 +99,7 @@ namespace Alissa.Core.Services
 
         public async Task<List<string>> GetRelatedMemoriesAsync(string topic)
         {
-            var related = _cachedMemories
+            List<string> related = _cachedMemories
                 .Where(m => m.Keywords.Contains(topic, StringComparer.OrdinalIgnoreCase) || m.Content.Contains(topic, StringComparison.OrdinalIgnoreCase))
                 .OrderByDescending(m => m.RelevanceScore)
                 .Select(m => m.Content)
@@ -96,9 +110,10 @@ namespace Alissa.Core.Services
 
         public async Task EvolveMemoryAsync(string memoryId, string updatedContent)
         {
-            var memory = _cachedMemories.FirstOrDefault(m => m.Id == memoryId);
+            SemanticMemoryEntry? memory = _cachedMemories.FirstOrDefault(m => m.Id == memoryId);
 
-            if (memory != null)
+            bool memoryExists = memory != null;
+            if (memoryExists)
             {
                 memory.Content = updatedContent;
                 memory.LastAccessedUtc = DateTime.UtcNow;
@@ -112,17 +127,19 @@ namespace Alissa.Core.Services
         public async Task RebuildSemanticIndexAsync()
         {
             // Recalculate relevance scores and relationships
-            foreach (var memory in _cachedMemories)
+            for (int i = 0; i < _cachedMemories.Count; i++)
             {
-                double baseScore = 1.0 - (DateTime.UtcNow - memory.CreatedUtc).TotalDays / 365.0 * 0.1;
-                double accessBonus = Math.Min(memory.AccessCount * 0.05, 0.3);
-                memory.RelevanceScore = Math.Clamp(baseScore + accessBonus, 0.0, 1.0);
+                SemanticMemoryEntry memory = _cachedMemories[i];
+                double daysSinceCreated = (DateTime.UtcNow - memory.CreatedUtc).TotalDays;
+                double baseScore = 1.0 - (daysSinceCreated / DAYS_PER_YEAR) * BASE_SCORE_FACTOR;
+                double accessBonus = Math.Min(memory.AccessCount * ACCESS_BONUS_FACTOR, MAX_ACCESS_BONUS);
+                memory.RelevanceScore = Math.Clamp(baseScore + accessBonus, MIN_RELEVANCE_SCORE, MAX_RELEVANCE_SCORE);
             }
 
             // Save all updated memories
-            foreach (var memory in _cachedMemories)
+            for (int i = 0; i < _cachedMemories.Count; i++)
             {
-                await PersistMemoryAsync(memory);
+                await PersistMemoryAsync(_cachedMemories[i]);
             }
 
             await Task.CompletedTask;
@@ -130,28 +147,34 @@ namespace Alissa.Core.Services
 
         private double CalculateSimilarity(string[] keywords1, string[] keywords2)
         {
-            if (keywords1.Length == 0 || keywords2.Length == 0)
+            bool keywords1Empty = keywords1.Length == 0;
+            bool keywords2Empty = keywords2.Length == 0;
+            if (keywords1Empty || keywords2Empty)
             {
                 return 0.0;
             }
 
             int matches = keywords1.Intersect(keywords2, StringComparer.OrdinalIgnoreCase).Count();
-            double similarity = (double)matches / Math.Max(keywords1.Length, keywords2.Length);
+            int maxKeywords = Math.Max(keywords1.Length, keywords2.Length);
+            double similarity = (double)matches / maxKeywords;
+
             return similarity;
         }
 
         private void LoadCachedMemories()
         {
-            var memoryFiles = Directory.GetFiles(_memoryPath, "*.json");
+            string[] memoryFiles = Directory.GetFiles(_memoryPath, JSON_PATTERN);
 
-            foreach (var file in memoryFiles)
+            for (int i = 0; i < memoryFiles.Length; i++)
             {
+                string file = memoryFiles[i];
                 try
                 {
                     string json = File.ReadAllText(file);
-                    var memory = JsonSerializer.Deserialize<SemanticMemoryEntry>(json);
+                    SemanticMemoryEntry? memory = JsonSerializer.Deserialize<SemanticMemoryEntry>(json);
 
-                    if (memory != null)
+                    bool memoryValid = memory != null;
+                    if (memoryValid)
                     {
                         _cachedMemories.Add(memory);
                     }
@@ -165,8 +188,9 @@ namespace Alissa.Core.Services
 
         private async Task PersistMemoryAsync(SemanticMemoryEntry entry)
         {
-            string filePath = Path.Combine(_memoryPath, $"{entry.Id}.json");
-            string json = JsonSerializer.Serialize(entry, new JsonSerializerOptions { WriteIndented = true });
+            string filePath = Path.Combine(_memoryPath, $"{entry.Id}{JSON_EXTENSION}");
+            JsonSerializerOptions options = new JsonSerializerOptions { WriteIndented = true };
+            string json = JsonSerializer.Serialize(entry, options);
 
             await File.WriteAllTextAsync(filePath, json);
         }

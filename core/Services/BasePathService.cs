@@ -6,13 +6,24 @@ namespace Alissa.Core.Services
 {
     public static class PathService
     {
+        // Constants
+        private const string CONFIG_DIR = "config";
+
         public static string ResolveBasePath()
         {
             string basePath = AppContext.BaseDirectory;
 
-            while (!Directory.Exists(Path.Combine(basePath, "config")))
+            bool hasConfig = Directory.Exists(Path.Combine(basePath, CONFIG_DIR));
+            while (!hasConfig)
             {
-                basePath = Directory.GetParent(basePath)!.FullName;
+                DirectoryInfo? parentDir = Directory.GetParent(basePath);
+                if (parentDir == null)
+                {
+                    break;
+                }
+
+                basePath = parentDir.FullName;
+                hasConfig = Directory.Exists(Path.Combine(basePath, CONFIG_DIR));
             }
 
             return basePath;

@@ -18,11 +18,13 @@ namespace Alissa.Core.Interfaces
 
         /// <summary>
         /// Stores a thought to persistent storage for later reference.
+        /// Optionally accepts an array of related topics for better retrieval.
         /// </summary>
-        Task StoreThoughtAsync(string thought, string category);
+        Task StoreThoughtAsync(string thought, string category, string[]? relatedTopics = null);
 
         /// <summary>
         /// Retrieves relevant thoughts related to current conversation.
+        /// Matches by keyword overlap on RelatedTopics, not substring containment.
         /// </summary>
         Task<List<string>> GetRelevantThoughtsAsync(string topic);
 
@@ -32,3 +34,4 @@ namespace Alissa.Core.Interfaces
         Task<List<string>> GetSessionThoughtsAsync(string sessionId);
     }
 }
+

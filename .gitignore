@@ -38,6 +38,14 @@ bld/
 # Uncomment if you have tasks that create the project's static files in wwwroot
 #wwwroot/
 
+# Python sidecar — never let VS/Git see this
+vendor/styletts2/.venv/
+vendor/**/.venv/
+**/__pycache__/
+*.pth
+*.onnx
+*.bin
+
 # Visual Studio 2017 auto generated files
 Generated\ Files/
 
@@ -360,4 +368,19 @@ MigrationBackup/
 .ionide/
 
 # Fody - auto-generated XML schema
-FodyWeavers.xsd
+
+# Speech vendor binaries and weights (download locally, do not commit)
+vendor/whisper/*.exe
+vendor/whisper/*.dll
+vendor/whisper/models/*.bin
+vendor/whisper/models/*.gguf
+vendor/piper/*.exe
+vendor/piper/*.dll
+vendor/piper/espeak-ng-data/
+vendor/piper/voices/*.onnx
+temp/audio/
+
+temp/
+memory/
+logs/
+docs/*/

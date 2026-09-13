@@ -16,6 +16,28 @@ namespace Alissa.Core.Services
     /// </summary>
     public class MemoryPipeline
     {
+        // Constants
+        private const double USER_PROFILE_WEIGHT = 0.9;
+        private const double FACTS_WEIGHT = 0.8;
+        private const double SKILLS_WEIGHT = 0.85;
+        private const double LEARNINGS_WEIGHT = 0.95;
+        private const double BASE_RELEVANCE = 0.5;
+        private const double HIGHLIGHTS_BOOST = 0.2;
+        private const double TOPICS_BOOST = 0.15;
+        private const double MESSAGE_BOOST = 0.15;
+        private const int MESSAGE_COUNT_THRESHOLD = 10;
+        private const double MAX_RELEVANCE = 1.0;
+        private const string CODE_KEYWORD = "code";
+        private const string DEBUG_KEYWORD = "debug";
+        private const string DESIGN_KEYWORD = "design";
+        private const string PATTERN_KEYWORD = "pattern";
+        private const string CODE_TAG = "coding";
+        private const string DEBUG_TAG = "debugging";
+        private const string DESIGN_TAG = "design";
+        private const string PATTERNS_TAG = "patterns";
+        private const int SUMMARY_LINE_COUNT = 5;
+        private const string DOT_PATH = ".";
+
         private readonly SummaryGenerationService _summaryService;
         private readonly MemoryExtractionService _extractionService;
         private readonly IMemoryManager _memoryManager;
@@ -44,12 +66,13 @@ namespace Alissa.Core.Services
         /// <returns>Summary result with extraction data</returns>
         public async Task<ConversationSummary> ProcessConversationAsync(string conversationText, string sessionId)
         {
-            if (string.IsNullOrWhiteSpace(conversationText))
+            bool isEmpty = string.IsNullOrWhiteSpace(conversationText);
+            if (isEmpty)
             {
                 return new ConversationSummary();
             }
 
-            var summary = new ConversationSummary
+            ConversationSummary summary = new ConversationSummary
             {
                 Id = sessionId
             };
@@ -71,18 +94,18 @@ namespace Alissa.Core.Services
         {
             try
             {
-                var summaryTask = _summaryService.GenerateSummaryAsync(conversationText, 5);
+                Task<string> summaryTask = _summaryService.GenerateSummaryAsync(conversationText, SUMMARY_LINE_COUNT);
                 summary.Summary = summaryTask.Result;
 
-                var highlightsTask = _summaryService.GenerateHighlightsAsync(conversationText, 5);
+                Task<List<string>> highlightsTask = _summaryService.GenerateHighlightsAsync(conversationText, SUMMARY_LINE_COUNT);
                 summary.Highlights = highlightsTask.Result;
 
-                var topicsTask = _summaryService.GenerateTopicsAsync(conversationText);
+                Task<List<string>> topicsTask = _summaryService.GenerateTopicsAsync(conversationText);
                 summary.Topics = topicsTask.Result;
             }
             catch (Exception ex)
             {
-                ErrorHandler.Handle(ex, ".", true);
+                ErrorHandler.Handle(ex, DOT_PATH, true);
             }
         }
 
@@ -90,44 +113,53 @@ namespace Alissa.Core.Services
         {
             try
             {
-                var extraction = await _extractionService.ExtractMemoryAsync(summary.Summary);
+                MemoryExtractionResult extraction = await _extractionService.ExtractMemoryAsync(summary.Summary);
 
                 summary.Extraction = extraction;
                 summary.ExtractedUtc = DateTime.UtcNow;
             }
             catch (Exception ex)
             {
-                ErrorHandler.Handle(ex, ".", true);
+                ErrorHandler.Handle(ex, DOT_PATH, true);
             }
         }
 
         private void StoreMemory(ConversationSummary summary)
         {
-            if (summary.Extraction == null || !summary.Extraction.HasData)
+            bool hasNoExtraction = summary.Extraction == null || !summary.Extraction.HasData;
+            if (hasNoExtraction)
             {
                 return;
             }
 
             try
             {
-                foreach (var kvp in summary.Extraction.UserProfile)
+                for (int i = 0; i < summary.Extraction.UserProfile.Count; i++)
                 {
-                    _memoryManager.SaveUserProfile(new MemoryEntry(kvp.Key, kvp.Value, 0.9, false));
+                    KeyValuePair<string, string> kvp = summary.Extraction.UserProfile.ElementAt(i);
+                    MemoryEntry userEntry = new MemoryEntry(kvp.Key, kvp.Value, USER_PROFILE_WEIGHT, false);
+                    _memoryManager.SaveUserProfile(userEntry);
                 }
 
-                foreach (var kvp in summary.Extraction.Facts)
+                for (int i = 0; i < summary.Extraction.Facts.Count; i++)
                 {
-                    _memoryManager.SaveFact(new MemoryEntry(kvp.Key, kvp.Value, 0.8, false));
+                    KeyValuePair<string, string> kvp = summary.Extraction.Facts.ElementAt(i);
+                    MemoryEntry factEntry = new MemoryEntry(kvp.Key, kvp.Value, FACTS_WEIGHT, false);
+                    _memoryManager.SaveFact(factEntry);
                 }
 
-                foreach (var kvp in summary.Extraction.Skills)
+                for (int i = 0; i < summary.Extraction.Skills.Count; i++)
                 {
-                    _memoryManager.SaveSkill(new MemoryEntry(kvp.Key, kvp.Value, 0.85, false));
+                    KeyValuePair<string, string> kvp = summary.Extraction.Skills.ElementAt(i);
+                    MemoryEntry skillEntry = new MemoryEntry(kvp.Key, kvp.Value, SKILLS_WEIGHT, false);
+                    _memoryManager.SaveSkill(skillEntry);
                 }
 
-                foreach (var kvp in summary.Extraction.SystemLearnings)
+                for (int i = 0; i < summary.Extraction.SystemLearnings.Count; i++)
                 {
-                    _memoryManager.SaveSystemLearning(new MemoryEntry(kvp.Key, kvp.Value, 0.95, false));
+                    KeyValuePair<string, string> kvp = summary.Extraction.SystemLearnings.ElementAt(i);
+                    MemoryEntry learningEntry = new MemoryEntry(kvp.Key, kvp.Value, LEARNINGS_WEIGHT, false);
+                    _memoryManager.SaveSystemLearning(learningEntry);
                 }
 
                 summary.IsProcessed = true;
@@ -135,7 +167,7 @@ namespace Alissa.Core.Services
             }
             catch (Exception ex)
             {
-                ErrorHandler.Handle(ex, ".", true);
+                ErrorHandler.Handle(ex, DOT_PATH, true);
             }
         }
 
@@ -143,7 +175,7 @@ namespace Alissa.Core.Services
         {
             try
             {
-                var mediumEntry = new MediumTermMemoryEntry
+                MediumTermMemoryEntry mediumEntry = new MediumTermMemoryEntry
                 {
                     SessionId = sessionId,
                     Summary = summary.Summary,
@@ -158,7 +190,7 @@ namespace Alissa.Core.Services
             }
             catch (Exception ex)
             {
-                ErrorHandler.Handle(ex, ".", false);
+                ErrorHandler.Handle(ex, DOT_PATH, false);
             }
         }
 
@@ -170,59 +202,68 @@ namespace Alissa.Core.Services
             }
             catch (Exception ex)
             {
-                ErrorHandler.Handle(ex, ".", false);
+                ErrorHandler.Handle(ex, DOT_PATH, false);
             }
         }
 
         private static double CalculateRelevance(ConversationSummary summary)
         {
-            double relevance = 0.5;
+            double relevance = BASE_RELEVANCE;
 
-            if (summary.Highlights.Count > 0)
+            bool hasHighlights = summary.Highlights.Count > 0;
+            if (hasHighlights)
             {
-                relevance += 0.2;
+                relevance += HIGHLIGHTS_BOOST;
             }
 
-            if (summary.Topics.Count > 0)
+            bool hasTopics = summary.Topics.Count > 0;
+            if (hasTopics)
             {
-                relevance += 0.15;
+                relevance += TOPICS_BOOST;
             }
 
-            if (summary.MessageCount > 10)
+            bool hasEnoughMessages = summary.MessageCount > MESSAGE_COUNT_THRESHOLD;
+            if (hasEnoughMessages)
             {
-                relevance += 0.15;
+                relevance += MESSAGE_BOOST;
             }
 
-            return Math.Min(1.0, relevance);
+            double cappedRelevance = Math.Min(MAX_RELEVANCE, relevance);
+            return cappedRelevance;
         }
 
         private static List<string> ExtractTags(ConversationSummary summary)
         {
-            var tags = new List<string>();
+            List<string> tags = new List<string>();
 
-            if (summary.Summary.Contains("code", StringComparison.OrdinalIgnoreCase))
+            bool hasCodeContent = summary.Summary.Contains(CODE_KEYWORD, StringComparison.OrdinalIgnoreCase);
+            if (hasCodeContent)
             {
-                tags.Add("coding");
+                tags.Add(CODE_TAG);
             }
 
-            if (summary.Summary.Contains("debug", StringComparison.OrdinalIgnoreCase))
+            bool hasDebugContent = summary.Summary.Contains(DEBUG_KEYWORD, StringComparison.OrdinalIgnoreCase);
+            if (hasDebugContent)
             {
-                tags.Add("debugging");
+                tags.Add(DEBUG_TAG);
             }
 
-            if (summary.Summary.Contains("design", StringComparison.OrdinalIgnoreCase))
+            bool hasDesignContent = summary.Summary.Contains(DESIGN_KEYWORD, StringComparison.OrdinalIgnoreCase);
+            if (hasDesignContent)
             {
-                tags.Add("design");
+                tags.Add(DESIGN_TAG);
             }
 
-            if (summary.Summary.Contains("pattern", StringComparison.OrdinalIgnoreCase))
+            bool hasPatternContent = summary.Summary.Contains(PATTERN_KEYWORD, StringComparison.OrdinalIgnoreCase);
+            if (hasPatternContent)
             {
-                tags.Add("patterns");
+                tags.Add(PATTERNS_TAG);
             }
 
             tags.AddRange(summary.Topics);
 
-            return tags.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            List<string> result = tags.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            return result;
         }
     }
 }

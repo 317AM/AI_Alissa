@@ -20,6 +20,17 @@ namespace Alissa.Core.Services
     /// </summary>
     public class MemoryIndexBuilder
     {
+        // Constants
+        private const string MEMORY_DIR = "memory";
+        private const string INDEX_FILE = "memory_index.json";
+        private const string USER_PROFILE_CATEGORY = "UserProfile";
+        private const string FACT_CATEGORY = "Fact";
+        private const string SKILL_CATEGORY = "Skill";
+        private const string SYSTEM_LEARNING_CATEGORY = "SystemLearning";
+        private const string MEDIUM_TERM_CATEGORY = "MediumTermMemory";
+        private const int DEFAULT_MAX_RESULTS = 10;
+        private const float MIN_SCORE_THRESHOLD = 0;
+
         private readonly string _basePath;
         private readonly IndexingRulesModel _rules;
         private readonly IMemoryManager _memoryManager;
@@ -36,7 +47,7 @@ namespace Alissa.Core.Services
         /// <summary>
         /// Gets the index file path.
         /// </summary>
-        private string IndexFilePath => Path.Combine(_basePath, "memory", "memory_index.json");
+        private string IndexFilePath => Path.Combine(_basePath, MEMORY_DIR, INDEX_FILE);
 
         /// <summary>
         /// Builds the memory index from all memory sources.
@@ -44,13 +55,13 @@ namespace Alissa.Core.Services
         /// </summary>
         public MemoryIndex BuildIndex()
         {
-            var index = new MemoryIndex
+            MemoryIndex index = new MemoryIndex
             {
                 LastBuiltUtc = DateTime.UtcNow
             };
 
-            var allTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var allTopics = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> allTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> allTopics = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             LoadMemoryEntries(index, allTags);
             LoadMediumTermMemories(index, allTags, allTopics);
@@ -74,7 +85,8 @@ namespace Alissa.Core.Services
         /// </summary>
         public MemoryIndex GetIndex()
         {
-            if (_rules.RebuildOnAccess || _cachedIndex == null)
+            bool shouldRebuild = _rules.RebuildOnAccess || _cachedIndex == null;
+            if (shouldRebuild)
             {
                 return BuildIndex();
             }
@@ -86,25 +98,26 @@ namespace Alissa.Core.Services
         /// Searches the index for entries matching a query.
         /// Uses heuristic scoring to find relevant memories.
         /// </summary>
-        public List<MemoryIndexEntry> Search(string query, int maxResults = 10)
+        public List<MemoryIndexEntry> Search(string query, int maxResults = DEFAULT_MAX_RESULTS)
         {
-            var index = GetIndex();
+            MemoryIndex index = GetIndex();
 
-            if (index.Entries.Count == 0)
+            bool hasEntries = index.Entries.Count > 0;
+            if (!hasEntries)
             {
                 return new List<MemoryIndexEntry>();
             }
 
-            var queryWords = query.ToLower().Split(new[] { ' ', ',', '.', ';' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] queryWords = query.ToLower().Split(new[] { ' ', ',', '.', ';' }, StringSplitOptions.RemoveEmptyEntries);
 
-            var results = index.Entries.Values
+            List<MemoryIndexEntry> results = index.Entries.Values
                 .AsParallel()
                 .Select(entry => new
                 {
                     Entry = entry,
                     Score = CalculateRelevanceScore(entry, queryWords)
                 })
-                .Where(x => x.Score > 0)
+                .Where(x => x.Score > MIN_SCORE_THRESHOLD)
                 .OrderByDescending(x => x.Score)
                 .Take(maxResults)
                 .Select(x => x.Entry)
@@ -116,29 +129,33 @@ namespace Alissa.Core.Services
         /// <summary>
         /// Gets entries by tag from the index.
         /// </summary>
-        public List<MemoryIndexEntry> GetByTag(string tag, int maxResults = 10)
+        public List<MemoryIndexEntry> GetByTag(string tag, int maxResults = DEFAULT_MAX_RESULTS)
         {
-            var index = GetIndex();
+            MemoryIndex index = GetIndex();
 
-            return index.Entries.Values
+            List<MemoryIndexEntry> results = index.Entries.Values
                 .Where(e => e.Tags.Contains(tag, StringComparer.OrdinalIgnoreCase))
                 .OrderByDescending(e => e.Relevance)
                 .Take(maxResults)
                 .ToList();
+
+            return results;
         }
 
         /// <summary>
         /// Gets all entries sorted by relevance.
         /// </summary>
-        public List<MemoryIndexEntry> GetAllSorted(int maxResults = 10)
+        public List<MemoryIndexEntry> GetAllSorted(int maxResults = DEFAULT_MAX_RESULTS)
         {
-            var index = GetIndex();
+            MemoryIndex index = GetIndex();
 
-            return index.Entries.Values
+            List<MemoryIndexEntry> results = index.Entries.Values
                 .OrderByDescending(e => e.Relevance)
                 .ThenByDescending(e => e.Timestamp)
                 .Take(maxResults)
                 .ToList();
+
+            return results;
         }
 
         /// <summary>
@@ -154,28 +171,28 @@ namespace Alissa.Core.Services
         {
             try
             {
-                var profile = _memoryManager.LoadUserProfile();
-                foreach (var entry in profile)
+                List<MemoryEntry> profile = _memoryManager.LoadUserProfile();
+                for (int i = 0; i < profile.Count; i++)
                 {
-                    AddToIndex(index, entry, "UserProfile", allTags);
+                    AddToIndex(index, profile[i], USER_PROFILE_CATEGORY, allTags);
                 }
 
-                var facts = _memoryManager.LoadFacts();
-                foreach (var entry in facts)
+                List<MemoryEntry> facts = _memoryManager.LoadFacts();
+                for (int i = 0; i < facts.Count; i++)
                 {
-                    AddToIndex(index, entry, "Fact", allTags);
+                    AddToIndex(index, facts[i], FACT_CATEGORY, allTags);
                 }
 
-                var skills = _memoryManager.LoadSkills();
-                foreach (var entry in skills)
+                List<MemoryEntry> skills = _memoryManager.LoadSkills();
+                for (int i = 0; i < skills.Count; i++)
                 {
-                    AddToIndex(index, entry, "Skill", allTags);
+                    AddToIndex(index, skills[i], SKILL_CATEGORY, allTags);
                 }
 
-                var learnings = _memoryManager.LoadSystemLearnings();
-                foreach (var entry in learnings)
+                List<MemoryEntry> learnings = _memoryManager.LoadSystemLearnings();
+                for (int i = 0; i < learnings.Count; i++)
                 {
-                    AddToIndex(index, entry, "SystemLearning", allTags);
+                    AddToIndex(index, learnings[i], SYSTEM_LEARNING_CATEGORY, allTags);
                 }
             }
             catch
@@ -228,7 +245,7 @@ namespace Alissa.Core.Services
 
         private void AddToIndex(MemoryIndex index, MemoryEntry entry, string category, HashSet<string> allTags)
         {
-            var indexEntry = new MemoryIndexEntry
+            MemoryIndexEntry indexEntry = new MemoryIndexEntry
             {
                 Key = entry.Key,
                 Category = category,

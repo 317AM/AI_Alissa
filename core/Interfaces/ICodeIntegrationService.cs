@@ -29,6 +29,11 @@ namespace Alissa.Core.Interfaces
         Task WriteModificationAsync(string filePath, string modifiedCode);
 
         /// <summary>
+        /// Checks if a file path is in a protected directory (config, memory, logs).
+        /// </summary>
+        bool IsPathProtected(string filePath);
+
+        /// <summary>
         /// Checks if a file path is safe to modify (not in protected directories).
         /// </summary>
         Task<bool> IsFileSafeToModifyAsync(string filePath);

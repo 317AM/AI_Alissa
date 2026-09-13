@@ -7,6 +7,10 @@ namespace Alissa.Core.Memory
 {
     public class MemoryCompressor
     {
+        private const double SEVEN_DAYS = 7.0;
+        private const double RELEVANCE_THRESHOLD = 0.3;
+        private const int MIN_CAPACITY = 1;
+
         private readonly MemoryModel _memoryConfig;
 
         public MemoryCompressor(MemoryModel memoryConfig)
@@ -16,9 +20,18 @@ namespace Alissa.Core.Memory
 
         public void CompressMemory(List<MemoryEntry> entries)
         {
-            foreach (var entry in entries.Where(e => !e.IsCoreMemory))
+            for (int i = 0; i < entries.Count; i++)
             {
-                if ((DateTime.Now - entry.Timestamp).TotalDays > 7 && entry.Relevance < 0.3)
+                MemoryEntry entry = entries[i];
+                bool isNotCore = !entry.IsCoreMemory;
+                if (!isNotCore)
+                {
+                    continue;
+                }
+
+                double daysSinceUpdate = (DateTime.Now - entry.Timestamp).TotalDays;
+                bool isOldAndLowRelevance = daysSinceUpdate > SEVEN_DAYS && entry.Relevance < RELEVANCE_THRESHOLD;
+                if (isOldAndLowRelevance)
                 {
                     entry.Relevance *= _memoryConfig.CompressionFactor;
                 }
@@ -27,18 +40,34 @@ namespace Alissa.Core.Memory
 
         public List<MemoryEntry> EnforceCapacity(List<MemoryEntry> entries)
         {
-            var core = entries.Where(e => e.IsCoreMemory).ToList();
-            var ephemeral = entries
-                .Where(e => !e.IsCoreMemory)
+            List<MemoryEntry> core = new List<MemoryEntry>();
+            List<MemoryEntry> ephemeral = new List<MemoryEntry>();
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                MemoryEntry entry = entries[i];
+                if (entry.IsCoreMemory)
+                {
+                    core.Add(entry);
+                }
+                else
+                {
+                    ephemeral.Add(entry);
+                }
+            }
+
+            List<MemoryEntry> sortedEphemeral = ephemeral
                 .OrderByDescending(e => e.Relevance)
                 .ThenByDescending(e => e.Timestamp)
                 .ToList();
 
             int coreCount = core.Count;
-            int availableCapacity = Math.Max(1, _memoryConfig.MaxLongTermEntries - coreCount);
+            int availableCapacity = Math.Max(MIN_CAPACITY, _memoryConfig.MaxLongTermEntries - coreCount);
 
-            var kept = ephemeral.Take(availableCapacity).ToList();
-            return core.Concat(kept).OrderByDescending(e => e.Timestamp).ToList();
+            List<MemoryEntry> kept = sortedEphemeral.Take(availableCapacity).ToList();
+            List<MemoryEntry> result = core.Concat(kept).OrderByDescending(e => e.Timestamp).ToList();
+
+            return result;
         }
     }
 }

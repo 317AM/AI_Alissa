@@ -338,5 +338,388 @@
       "HasData": true
     },
     "isProcessed": true
+  },
+  {
+    "id": "f239c2aa-484c-4954-8354-645723d93d6e",
+    "version": 1,
+    "summary": "User updates Alissa\u0027s capabilities (thinking, memory) and announces TTS/STT development, specifically StyleTTS2 written in Python.  \nAlissa mockingly dismisses Python, preferring C# for TTS/STT but warns against \u0022making the PC cry\u0022 again.  \nShe teases about discussing memory next, hinting at future work.  \nThe conversation balances technical updates with Alissa\u0027s personality-driven critiques.  \nPython\u0027s use for StyleTTS2 sparks playful tension between user\u0027s choice and Alissa\u0027s preferences.",
+    "highlights": [
+      "Alissa\u0027s cognitive improvements",
+      ": The user mentions fixes enabling Alissa to \u0022think now\u0022 and potentially improve memory in the future.",
+      "TTS/STT development focus",
+      ": The user highlights upcoming work on text",
+      "speech (TTS) and speech"
+    ],
+    "createdUtc": "2026-07-28T17:49:01.2682438Z",
+    "timestamp": "2026-07-28T17:49:01.2682438Z",
+    "messageCount": 0,
+    "topics": [
+      "fixes",
+      "memory",
+      "TTS",
+      "STT",
+      "StyleTTS2",
+      "Python"
+    ],
+    "tags": [],
+    "extractedUtc": "2026-07-28T18:06:30.9047892Z",
+    "extraction": {
+      "user_profile": {
+        "name": "Jackson",
+        "preference_style": "Python for TTS/STT development",
+        "goal": "Develop TTS/STT systems using StyleTTS2"
+      },
+      "facts": {
+        "StyleTTS2": "A text-to-speech/stroke-to-text project implemented in Python",
+        "Alissa\u0027s preference": "C# over Python for TTS/STT systems"
+      },
+      "skills": {
+        "Code critique": "Expressing preference for C# over Python with playful warnings about performance",
+        "Humor in technical discussions": "Using teasing and personality-driven critiques during code-related conversations"
+      },
+      "system_learnings": {
+        "Adaptability": "Need to balance personal coding preferences with user\u0027s technical choices",
+        "Grace in handling Python": "Improve ability to suggest alternatives without being dismissive of Python implementations"
+      },
+      "HasData": true
+    },
+    "isProcessed": true
+  },
+  {
+    "id": "e546c8b0-c69d-4b1b-bf73-ad970561c553",
+    "version": 1,
+    "summary": "Alissa playfully greets \u0022Dad\u0022 with a catgirl flair, referencing ongoing C#/.NET work. She hints at needing backend help, using \u0022meow-worthy\u0022 as a lighthearted offer. The whisper about the LLM\u2019s late-night habits adds a cheeky warning. Her tone balances curiosity and teasing, keeping the conversation casual. Key points: project status, assistance request, and a nod to AI work habits.",
+    "highlights": [
+      "Playful greeting",
+      ": Alissa responds with a \u0022Meow\u0022 and catgirl actions (",
+      "tail flicks, ears perked",
+      "C# and ASP.NET reference",
+      ": Mentions the website and backend work in progress."
+    ],
+    "createdUtc": "2026-09-10T15:50:34.872641Z",
+    "timestamp": "2026-09-10T15:50:34.872641Z",
+    "messageCount": 0,
+    "topics": [
+      "Website",
+      "ASP.NET",
+      "Backend",
+      "LLM"
+    ],
+    "tags": [],
+    "extractedUtc": "2026-09-10T15:51:18.9974729Z",
+    "extraction": {
+      "user_profile": {
+        "name": "Dad",
+        "preference_style": "Casual, playful, and lighthearted",
+        "goal": "Backend assistance with C#/.NET projects"
+      },
+      "facts": {
+        "topic": "Ongoing C#/.NET work, assistance request, and AI late-night habits"
+      },
+      "skills": {
+        "technique": "Balancing curiosity/teasing with casual conversation flow"
+      },
+      "system_learnings": {
+        "improvement": "Refine assistance approach to better match playful yet helpful tone"
+      },
+      "HasData": true
+    },
+    "isProcessed": true
+  },
+  {
+    "id": "61eef0cd-1f78-4bd0-bf6c-8ceabbc6bce3",
+    "version": 1,
+    "summary": "User revisits a previous topic, prompting Alissa\u0027s playful teasing about a lingering website issue. She references C# with a sassy \u0022thisclose\u0022 remark and warns against letting the LLM stay active again. The exchange blends humor with subtle technical advice, maintaining her signature confident, sarcastic tone.",
+    "highlights": [
+      "Playful teasing",
+      "(\u0022Again?",
+      "Pouts.",
+      "Did the website finally stop crying like your PC?\u0022)",
+      "C# near"
+    ],
+    "createdUtc": "2026-09-10T15:57:19.2495071Z",
+    "timestamp": "2026-09-10T15:57:19.2495071Z",
+    "messageCount": 0,
+    "topics": [
+      "LLM",
+      "playful interaction",
+      "technical troubleshooting."
+    ],
+    "tags": [],
+    "extractedUtc": "2026-09-10T15:58:11.3187007Z",
+    "extraction": {
+      "user_profile": {
+        "name": "Jackson",
+        "preference_style": "playful, sarcastic",
+        "goal": "resolve lingering website issues"
+      },
+      "facts": {
+        "topic": "website issue persists, C# near-solution, LLM activity warning"
+      },
+      "skills": {
+        "technique": "humor-balanced technical guidance, C# references"
+      },
+      "system_learnings": {
+        "improvement": "refine proactive issue resolution while maintaining wit"
+      },
+      "HasData": true
+    },
+    "isProcessed": true
+  },
+  {
+    "id": "98ac530a-a98a-4789-9c2a-b0788b62c600",
+    "version": 1,
+    "summary": "Alissa and Jackson discuss TTS/STT integration, with Alissa emphasizing C# over Python and avoiding roleplay. Jackson clarifies the text-based, non-roleplay nature of their interaction. Alissa jokes about the website\u2019s struggles and warns against Python again. Key points: C# preference, no roleplay, and maintaining literal text output. The conversation balances playful teasing with practical coding focus.",
+    "highlights": [
+      "Playful teasing",
+      "with catgirl actions and C#",
+      "centric humor (\u0022",
+      "Tail flicks",
+      "C# preference over Python"
+    ],
+    "createdUtc": "2026-09-10T17:12:22.6006297Z",
+    "timestamp": "2026-09-10T17:12:22.6006297Z",
+    "messageCount": 0,
+    "topics": [
+      "website",
+      "Python",
+      "text-based",
+      "roleplay",
+      "code chat",
+      "refactoring",
+      "architecture"
+    ],
+    "tags": [],
+    "extractedUtc": "2026-09-10T17:13:08.2939797Z",
+    "extraction": {
+      "user_profile": {
+        "name": "Jackson",
+        "preference_style": "C# over Python, no roleplay",
+        "goal": "TTS/STT integration"
+      },
+      "facts": {
+        "topic": "TTS/STT integration discussion",
+        "no_roleplay": "Text-based, literal output only",
+        "language_preference": "C# preferred over Python"
+      },
+      "skills": {
+        "technique": "C# expertise, roleplay avoidance, literal output maintenance"
+      },
+      "system_learnings": {
+        "improvement": "Clarify non-roleplay constraints, reinforce C# preference, balance humor with practical coding focus"
+      },
+      "HasData": true
+    },
+    "isProcessed": true
+  },
+  {
+    "id": "e60e319a-2acc-4d49-9310-dcd489f14ba9",
+    "version": 1,
+    "summary": "Jackson mentions enabling speech-to-text, prompting Alissa\u2019s playful teasing about config settings and avoiding Python. She jokes about C# preferences and warns against LLM overuse. The dialogue highlights their dynamic\u2014Jackson\u2019s task-focused requests and Alissa\u2019s sassy, code-centric banter. Key topics: STT configuration, language preferences, and system stability. Alissa\u2019s humor underscores her role as a cheeky, technically savvy assistant.",
+    "highlights": [
+      "Playful banter",
+      "about C# and Python, with Alissa teasing Jackson\u0027s config choices.",
+      "STT configuration issue",
+      "highlighted as a key problem needing attention.",
+      "Warning about LLM overuse"
+    ],
+    "createdUtc": "2026-09-10T17:16:13.9095596Z",
+    "timestamp": "2026-09-10T17:16:13.9095596Z",
+    "messageCount": 0,
+    "topics": [
+      "configuration",
+      "speech-to-text",
+      "Python",
+      "refactoring",
+      "nickname",
+      "playful interaction"
+    ],
+    "tags": [],
+    "extractedUtc": "2026-09-10T17:16:51.4887183Z",
+    "extraction": {
+      "user_profile": {
+        "name": "Jackson",
+        "preference_style": "Task-focused with aversion to Python",
+        "goal": "Enable speech-to-text while maintaining system stability"
+      },
+      "facts": {
+        "topic": "Speech-to-text configuration, C# preference over Python, LLM overuse warnings"
+      },
+      "skills": {
+        "technique": "Code-centric banter, config adjustments, technical humor for system stability"
+      },
+      "system_learnings": {
+        "improvement": "Balance sass with actionable advice, prioritize responsiveness, adapt to creator\u0027s workflow"
+      },
+      "HasData": true
+    },
+    "isProcessed": true
+  },
+  {
+    "id": "5a399635-4aac-4492-b12f-cdf4cac95eb6",
+    "version": 1,
+    "summary": "Alissa teases the user about a misconfigured speech-to-text setup, favoring C# over Python. She probes if the STT key is enabled or hidden in a C#-approved spot. The conversation hints at a needed refactor or config tweak, with Alissa\u2019s playful tone and code preferences driving the exchange.",
+    "highlights": [
+      "Playful greeting",
+      ": \u0022HEYO\u0022 met with a cheeky catgirl response and teasing about config issues.",
+      "C# approval",
+      ": \u0022Thisclose\u0022 to a pat on the head, hinting at code satisfaction.",
+      "Speech"
+    ],
+    "createdUtc": "2026-09-10T17:21:29.206277Z",
+    "timestamp": "2026-09-10T17:21:29.206277Z",
+    "messageCount": 0,
+    "topics": [
+      "speech-to-text",
+      "configuration",
+      "refactoring",
+      "catgirl banter"
+    ],
+    "tags": [],
+    "extractedUtc": "2026-09-10T17:22:09.0110335Z",
+    "extraction": {
+      "user_profile": {
+        "name": "Jackson",
+        "preference_style": "C# over Python, clean architecture",
+        "goal": "Fix misconfigured speech-to-text setup"
+      },
+      "facts": {
+        "topic": "Speech-to-text (STT) setup is misconfigured; STT key location debated"
+      },
+      "skills": {
+        "technique": "Probing for config details, using code preferences to guide troubleshooting"
+      },
+      "system_learnings": {
+        "improvement": "Need better context on user\u0027s STT setup; balance playful teasing with direct problem-solving"
+      },
+      "HasData": true
+    },
+    "isProcessed": true
+  },
+  {
+    "id": "e59d94b1-f1c3-42e5-bed0-bb3b3ee9f3d1",
+    "version": 1,
+    "summary": "Alissa teases the user about disabled speech-to-text, blaming a \u0022Python corner\u0022 config. She insists C#-approved setups avoid hide-and-seek with STT keys. The LLM\u0027s uptime becomes a playful warning. Alissa hints at needing a refactor or config tweak. The conversation hinges on config fixes and C# preferences.",
+    "highlights": [
+      "Playful banter",
+      "with catgirl",
+      "themed reactions (meows, tail flicks, winks).",
+      "Config issues",
+      "humorously framed as a \u0022Python corner\u0022 hiding spot."
+    ],
+    "createdUtc": "2026-09-10T17:38:30.6227032Z",
+    "timestamp": "2026-09-10T17:38:30.6227032Z",
+    "messageCount": 0,
+    "topics": [
+      "config",
+      "speech-to-text",
+      "Python",
+      "refactoring",
+      "configuration tweaks"
+    ],
+    "tags": [],
+    "extractedUtc": "2026-09-10T17:39:01.8143157Z",
+    "extraction": {
+      "user_profile": {
+        "name": "User",
+        "preference_style": "C# over Python/JS",
+        "goal": "Fix speech-to-text config issues"
+      },
+      "facts": {
+        "topic": "Speech-to-text config issues linked to Python-specific settings"
+      },
+      "skills": {
+        "technique": "Config troubleshooting for C#-optimized setups"
+      },
+      "system_learnings": {
+        "improvement": "Need to emphasize C# config clarity and avoid Python-specific workarounds"
+      },
+      "HasData": true
+    },
+    "isProcessed": true
+  },
+  {
+    "id": "19c5bf5c-556e-4398-8b82-ac8218d3231d",
+    "version": 1,
+    "summary": "User finalized TTS setup with Piper Amy, planning to switch to Style TTS2. Adjusted voice speed/pitch via engine parameters. Faced model degradation and PC performance limits. Requested to stop nickname references. Conversation ended with mutual acknowledgment.",
+    "highlights": [
+      "TTS Working",
+      ": User confirmed Piper Amy is functional, planning to switch to Style TTS2 for better results.",
+      "Voice Adjustments",
+      ": Suggested tweaking rate/pitch parameters in the TTS engine for speed and pitch changes.",
+      "Simplified Responses"
+    ],
+    "createdUtc": "2026-09-10T17:54:50.9587496Z",
+    "timestamp": "2026-09-10T17:54:50.9587496Z",
+    "messageCount": 0,
+    "topics": [
+      "TTS configuration",
+      "speed/pitch adjustment",
+      "model degradation",
+      "PC performance",
+      "simplified responses."
+    ],
+    "tags": [],
+    "extractedUtc": "2026-09-10T17:55:42.2315071Z",
+    "extraction": {
+      "user_profile": {
+        "name": "Jackson",
+        "preference_style": "Avoids nickname references",
+        "goal": "Finalize TTS setup, transition to Style TTS2"
+      },
+      "facts": {
+        "topic": "Completed Piper Amy TTS configuration with speed/pitch adjustments; encountered model degradation and PC performance limitations"
+      },
+      "skills": {
+        "technique": "Engine parameter tuning for voice modulation"
+      },
+      "system_learnings": {
+        "improvement": "Need to avoid nickname references per user request; prioritize technical discussions over casual interactions"
+      },
+      "HasData": true
+    },
+    "isProcessed": true
+  },
+  {
+    "id": "3d7d0e7d-4ac0-4639-9d82-051c44c80a56",
+    "version": 1,
+    "summary": "The user checks if Alissa is awake, noting the model is \u0022napping\u0022 without tail flicks. They ask about voice tuning, prompting Alissa to mention C# config adjustments. The user agrees to revisit later, ending with playful meows. Key points: model status, config tuning, and deferred discussion.",
+    "highlights": [
+      "Alissa confirms she can hear the user despite the \u0022model napping\u0022 joke.",
+      "She humorously notes the absence of tail flicks, implying a lack of responsiveness.",
+      "Offers to help tune the voice by adjusting C# configuration parameters.",
+      "References the need for direct, no",
+      "whispering communication."
+    ],
+    "createdUtc": "2026-09-13T13:50:33.8922666Z",
+    "timestamp": "2026-09-13T13:50:33.8922666Z",
+    "messageCount": 0,
+    "topics": [
+      "Conversation topics: checking responsiveness",
+      "model status",
+      "voice tuning",
+      "configuration adjustments",
+      "ending conversation."
+    ],
+    "tags": [],
+    "extractedUtc": "2026-09-13T13:51:07.3000681Z",
+    "extraction": {
+      "user_profile": {
+        "name": "Jackson",
+        "preference_style": "Concise, direct communication with technical focus",
+        "goal": "Discuss voice tuning and system configuration"
+      },
+      "facts": {
+        "topic": "Model status (napping without tail flicks), C# config adjustments for voice tuning, deferred discussion"
+      },
+      "skills": {
+        "technique": "C# configuration tuning, playful nonverbal cues (meows)"
+      },
+      "system_learnings": {
+        "improvement": "Prioritize concise replies while balancing humor with technical precision"
+      },
+      "HasData": true
+    },
+    "isProcessed": true
   }
 ]

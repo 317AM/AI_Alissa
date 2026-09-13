@@ -7,11 +7,13 @@
     "UserProfile",
     "Facts",
     "RecentContext",
+    "MediumTermMemory",
     "Skills",
+    "InternalNotes",
     "SystemLearnings",
     "SessionCache"
   ],
-  "includeMediumTermMemory": false,
+  "includeMediumTermMemory": true,
   "includePersonaFields": true,
   "tokensPerLine": 4
 }

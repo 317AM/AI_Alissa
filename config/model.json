@@ -1,6 +1,18 @@
 {
-  "ModelName": "qwen3:14b",
-  "MaxTokens": 2048,
+  "ModelName": "qwen3:8b",
+  "MaxTokens": 4096,
+  "Temperature": 0.9,
   "ResponseTimeoutSeconds": 60,
-  "KeepAliveMinutes": 30
+  "KeepAliveMinutes": 30,
+  "EnableThinking": true,
+  "Stt": {
+    "Engine": "whisper",
+    "WhisperModelPath": "vendor/whisper/models/ggml-small.en.bin"
+  },
+  "Tts": {
+    "Engine": "piper",
+    "PiperVoiceModelPath": "vendor/piper/voices/en_US-amy-medium.onnx",
+    "StyleTts2CheckpointPath": "vendor/styletts2/models/LJSpeech/epoch_2nd_00100.pth",
+    "StyleTts2ConfigPath": "vendor/styletts2/models/LJSpeech/config.yml"
+  }
 }

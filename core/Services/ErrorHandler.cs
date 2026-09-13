@@ -7,20 +7,28 @@ namespace Alissa.Core.Services
 {
     public static class ErrorHandler
     {
+        // Constants
+        private const string LOGS_DIR = "logs";
+        private const string ERRORS_DIR = "errors";
+        private const string ERROR_PREFIX = "error_";
+        private const string TIMESTAMP_FORMAT = "yyyy-MM-dd_HH-mm-ss";
+        private const string TEXT_EXTENSION = ".txt";
+
         public static ErrorResult Handle(
                 Exception ex,
-                string basePath,
+                string? basePath,
                 bool verbose)
         {
             bool errorLogged = false;
+
+            if (!string.IsNullOrWhiteSpace(basePath))
             {
                 try
                 {
-                    string dir = Path.Combine(basePath, "logs", "errors");
+                    string dir = Path.Combine(basePath, LOGS_DIR, ERRORS_DIR);
                     Directory.CreateDirectory(dir);
 
-                    string path = Path.Combine(dir,
-                        $"error_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt");
+                    string path = Path.Combine(dir, ERROR_PREFIX + DateTime.Now.ToString(TIMESTAMP_FORMAT) + TEXT_EXTENSION);
 
                     File.WriteAllText(path, ex.ToString());
                     errorLogged = true;
@@ -36,10 +44,11 @@ namespace Alissa.Core.Services
                 Console.WriteLine(ex.ToString());
             }
 
-            return new ErrorResult
+            ErrorResult result = new ErrorResult
             {
                 IsFatal = true
             };
+            return result;
         }
     }
 }

@@ -34,6 +34,26 @@ public enum OutputMode
 /// </summary>
 public static class TextManager
 {
+    // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    // Constants
+    // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+    private const string HUB_URL_REQUIRED = "hubUrl is required for Hub317 mode.";
+    private const string CONFIG_MESSAGE_PREFIX = "[TextManager] Mode = ";
+    private const string CONFIG_MESSAGE_ARROW = " → ";
+    private const string HUB_ARG_PREFIX = "--hub";
+    private const string HUB_ARG_WITH_EQUALS = "--hub=";
+    private const string HUB_ENV_VARIABLE = "ALISSA_HUB_URL";
+    private const string DEFAULT_HUB_URL = "ws://localhost:317/ws/alissa";
+    private const string ARG_SPLIT_CHAR = "=";
+    private const string ALISSA_RESPONSE_PREFIX = "\nAlissa: ";
+    private const string STREAM_START_TYPE = "stream_start";
+    private const string STREAM_CHUNK_TYPE = "stream_chunk";
+    private const string STREAM_END_TYPE = "stream_end";
+    private const string MESSAGE_TYPE = "message";
+    private const string ROLE_USER = "user";
+    private const string ROLE_ASSISTANT = "assistant";
+
     // ── Private state ───────────────────────────────────────────
     private static OutputMode       _mode = OutputMode.Console;
     private static HubOutputClient? _hub  = null;
@@ -55,14 +75,15 @@ public static class TextManager
         if (mode == OutputMode.Hub317)
         {
             if (string.IsNullOrWhiteSpace(hubUrl))
-                throw new ArgumentException("hubUrl is required for Hub317 mode.");
+                throw new ArgumentException(HUB_URL_REQUIRED);
 
             _hub = new HubOutputClient(hubUrl);
             // Fire-and-forget — reconnects automatically in background
             _ = _hub.RunAsync();
         }
 
-        Status($"[TextManager] Mode = {mode}" + (hubUrl != null ? $" → {hubUrl}" : ""));
+        string configMessage = CONFIG_MESSAGE_PREFIX + mode + (hubUrl != null ? CONFIG_MESSAGE_ARROW + hubUrl : string.Empty);
+        Status(configMessage);
     }
 
     /// <summary>
@@ -70,16 +91,16 @@ public static class TextManager
     /// and auto-configures.  Call before RunChatLoop.
     /// Returns true if Hub mode was activated.
     /// </summary>
-    public static bool TryConfigureFromArgs(string[] args, string defaultUrl = "ws://localhost:317/ws/alissa")
+    public static bool TryConfigureFromArgs(string[] args, string defaultUrl = DEFAULT_HUB_URL)
     {
-        var result = false;
-        var hubArg = args.FirstOrDefault(a =>
-            a == "--hub" || a.StartsWith("--hub=", StringComparison.OrdinalIgnoreCase));
+        bool result = false;
+        string? hubArg = args.FirstOrDefault(a =>
+            a == HUB_ARG_PREFIX || a.StartsWith(HUB_ARG_WITH_EQUALS, StringComparison.OrdinalIgnoreCase));
 
-        var envUrl = Environment.GetEnvironmentVariable("ALISSA_HUB_URL");
+        string? envUrl = Environment.GetEnvironmentVariable(HUB_ENV_VARIABLE);
 
-        var url = hubArg?.Contains('=') == true
-            ? hubArg.Split('=', 2)[1]
+        string? url = hubArg?.Contains('=') == true
+            ? hubArg.Split(ARG_SPLIT_CHAR, 2)[1]
             : (hubArg != null ? defaultUrl : envUrl);
 
         if (url != null)
@@ -99,14 +120,13 @@ public static class TextManager
     /// </summary>
     public static void BeginResponse()
     {
-        switch (_mode)
+        if (_mode == OutputMode.Console)
         {
-            case OutputMode.Console:
-                Console.Write("\nAlissa: ");
-                break;
-            case OutputMode.Hub317:
-                _hub?.SendStreamStart();
-                break;
+            Console.Write(ALISSA_RESPONSE_PREFIX);
+        }
+        else if (_mode == OutputMode.Hub317)
+        {
+            _hub?.SendStreamStart();
         }
     }
 
@@ -114,16 +134,15 @@ public static class TextManager
     /// Print a single token from the AI stream.
     /// In Console mode: writes directly; in Hub mode: sends as stream_chunk.
     /// </summary>
-    public static void PrintToken(string token, string? personality = null)
+    public static void PrintToken(string token)
     {
-        switch (_mode)
+        if (_mode == OutputMode.Console)
         {
-            case OutputMode.Console:
-                Console.Write(token);
-                break;
-            case OutputMode.Hub317:
-                _hub?.SendChunk(token);
-                break;
+            Console.Write(token);
+        }
+        else if (_mode == OutputMode.Hub317)
+        {
+            _hub?.SendChunk(token);
         }
     }
 
@@ -133,14 +152,13 @@ public static class TextManager
     /// </summary>
     public static void EndResponse()
     {
-        switch (_mode)
+        if (_mode == OutputMode.Console)
         {
-            case OutputMode.Console:
-                Console.WriteLine();
-                break;
-            case OutputMode.Hub317:
-                _hub?.SendStreamEnd();
-                break;
+            Console.WriteLine();
+        }
+        else if (_mode == OutputMode.Hub317)
+        {
+            _hub?.SendStreamEnd();
         }
     }
 
@@ -148,16 +166,32 @@ public static class TextManager
     /// Send a complete, non-streamed response in one shot.
     /// Useful for short replies where streaming isn't needed.
     /// </summary>
-    public static void SendComplete(string content)
+    public static void SendMessage(string content)
     {
-        switch (_mode)
+        string capitalizedRole = char.ToUpper(ROLE_ASSISTANT[0]) + ROLE_ASSISTANT.Substring(1);
+        string formattedContent = $"\n{capitalizedRole}: {content}";
+
+        if (_mode == OutputMode.Console)
         {
-            case OutputMode.Console:
-                Console.WriteLine($"\nAlissa: {content}");
-                break;
-            case OutputMode.Hub317:
-                _hub?.SendMessage(content);
-                break;
+            Console.WriteLine(formattedContent);
+        }
+        else if (_mode == OutputMode.Hub317)
+        {
+            _hub?.SendMessage(content);
+        }
+    }
+
+    public static void SendComplete(string content) => SendMessage(content);
+
+    /// <summary>
+    /// Send audio data as base64-encoded audio_chunk (Hub317 mode only).
+    /// In Console mode, this is a no-op.
+    /// </summary>
+    public static void SendAudioChunk(byte[] audioData)
+    {
+        if (_mode == OutputMode.Hub317)
+        {
+            _hub?.SendAudioChunk(audioData);
         }
     }
 
@@ -183,6 +217,13 @@ public static class TextManager
     /// </summary>
     public static (string? SystemPrompt, List<HistEntry>? History) LastMessageMeta =>
         (_hub?.LastSystemPrompt, _hub?.LastHistory);
+
+    /// <summary>
+    /// In Hub mode, returns audio WAV bytes if the last message was audio.
+    /// Returns null in Console mode or if last message was text.
+    /// </summary>
+    public static byte[]? LastMessageAudioWav =>
+        _hub?.LastAudioWavBytes;
 
     // ── Status / log output ──────────────────────────────────────
     // These always go to the console so you can monitor Alissa
@@ -270,7 +311,7 @@ public sealed class HubOutputClient
 
     private async Task ListenAsync(CancellationToken ct)
     {
-        var buf = new byte[65_536];
+        var buf = new byte[256_000]; // Increased for WAV data
         while (_ws?.State == WebSocketState.Open && !ct.IsCancellationRequested)
         {
             using var ms = new MemoryStream();
@@ -283,15 +324,43 @@ public sealed class HubOutputClient
                 ms.Write(buf, 0, result.Count);
             } while (!result.EndOfMessage);
 
+            // Try to parse as JSON first
             var raw = Encoding.UTF8.GetString(ms.ToArray());
             try
             {
                 var msg = JsonSerializer.Deserialize<HubInboundMsg>(raw, _json);
-                // Only queue messages where the user is talking — ignore system pings
-                if (msg?.Role == "user" && msg.Content != null)
+
+                // Queue text messages where role=="user" && content!=null
+                if (msg?.Role == "user" && msg.Content != null && msg.Type != "audio")
+                {
                     _inbox.TryAdd(msg, millisecondsTimeout: 0);
+                }
+                // Queue audio messages where type=="audio" && content!=null (base64 WAV)
+                else if (msg?.Type == "audio" && msg.Role == "user" && msg.Content != null)
+                {
+                    // Content is base64-encoded WAV data
+                    msg.AudioWavBytes = Convert.FromBase64String(msg.Content);
+                    _inbox.TryAdd(msg, millisecondsTimeout: 0);
+                }
             }
-            catch { /* malformed JSON — skip */ }
+            catch 
+            { 
+                // Try treating raw bytes as binary WAV data
+                try
+                {
+                    var wavMsg = new HubInboundMsg
+                    {
+                        Type = "audio",
+                        Role = "user",
+                        AudioWavBytes = ms.ToArray()
+                    };
+                    _inbox.TryAdd(wavMsg, millisecondsTimeout: 0);
+                }
+                catch
+                {
+                    // Malformed message — skip
+                }
+            }
         }
     }
 
@@ -307,6 +376,12 @@ public sealed class HubOutputClient
 
     public void SendMessage(string content) =>
         _ = SendRawAsync(new OutMsg { Type = "message", Role = "assistant", Content = content });
+
+    public void SendAudioChunk(byte[] audioData) =>
+        _ = SendRawAsync(new OutMsg { Type = "audio_chunk", Role = "assistant", Content = Convert.ToBase64String(audioData) });
+
+    public void SendTranscript(string transcript) =>
+        _ = SendRawAsync(new OutMsg { Type = "transcript", Role = "user", Content = transcript });
 
     private async Task SendRawAsync(OutMsg msg)
     {
@@ -335,6 +410,7 @@ public sealed class HubOutputClient
                 LastUserName      = msg.UserName ?? "User";
                 LastSystemPrompt  = msg.SystemPrompt;
                 LastHistory       = msg.History;
+                LastAudioWavBytes = msg.AudioWavBytes;
                 return msg.Content;
             }
             catch (OperationCanceledException) { return null; }
@@ -345,6 +421,7 @@ public sealed class HubOutputClient
     public string?          LastSystemPrompt  { get; private set; }
     public string?          LastUserName      { get; private set; }
     public List<HistEntry>? LastHistory       { get; private set; }
+    public byte[]?          LastAudioWavBytes { get; private set; }
 
     // ── DTOs ──────────────────────────────────────────────────────
     private class OutMsg
@@ -362,6 +439,10 @@ public sealed class HubOutputClient
         [JsonPropertyName("userName")]     public string?          UserName     { get; set; }
         [JsonPropertyName("systemPrompt")] public string?          SystemPrompt { get; set; }
         [JsonPropertyName("history")]      public List<HistEntry>? History      { get; set; }
+        [JsonPropertyName("format")]       public string?          Format       { get; set; }
+
+        // Not serialized from JSON, set after deserialization if type=="audio"
+        public byte[]? AudioWavBytes { get; set; }
     }
 }
 

@@ -16,11 +16,16 @@ namespace Alissa.Core.Services
     /// </summary>
     public class AlissaClient
     {
+        // Constants
+        private const string THOUGHT_CATEGORY = "session_reflection";
+
         private readonly IChatClient _chatClient;
         private readonly IPromptBuilder _promptBuilder;
         private readonly IMemoryManager _memoryManager;
         private readonly ISessionManager _sessionManager;
         private readonly IThoughtService? _thoughtService;
+        private readonly ISpeechToTextService? _speechToTextService;
+        private readonly ITextToSpeechService? _textToSpeechService;
 
         private Session _currentSession;
 
@@ -29,26 +34,37 @@ namespace Alissa.Core.Services
         /// </summary>
         public event Action<string>? OnTokenReceived;
 
+        /// <summary>
+        /// Event fired when audio is ready for playback (after synthesis).
+        /// </summary>
+        public event Action<byte[]>? OnAudioReady;
+
         public AlissaClient(
             IChatClient chatClient,
             IPromptBuilder promptBuilder,
             IMemoryManager memoryManager,
             ISessionManager sessionManager,
-            IThoughtService? thoughtService = null)
+            IThoughtService? thoughtService = null,
+            ISpeechToTextService? speechToTextService = null,
+            ITextToSpeechService? textToSpeechService = null)
         {
             _chatClient = chatClient;
             _promptBuilder = promptBuilder;
             _memoryManager = memoryManager;
             _sessionManager = sessionManager;
             _thoughtService = thoughtService;
+            _speechToTextService = speechToTextService;
+            _textToSpeechService = textToSpeechService;
 
             _currentSession = _sessionManager.CreateSession();
 
-            var cachedMessages = _memoryManager.LoadSessionCache();
-            if (cachedMessages.Any())
+            List<Message> cachedMessages = _memoryManager.LoadSessionCache();
+            bool hasCachedMessages = cachedMessages.Any();
+            if (hasCachedMessages)
             {
-                foreach (var msg in cachedMessages)
+                for (int i = 0; i < cachedMessages.Count; i++)
                 {
+                    Message msg = cachedMessages[i];
                     _currentSession.Messages.Add(msg);
                 }
             }
@@ -63,22 +79,24 @@ namespace Alissa.Core.Services
             _currentSession.AddMessage(MessageRole.User, userInput);
             _memoryManager.SaveSessionCache(_currentSession.Messages);
 
-            string systemPrompt = BuildSystemPrompt(userInput);
+            string systemPrompt = await BuildSystemPromptAsync(userInput);
 
-            var sb = new StringBuilder();
-            var emojiCollector = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
+            StringBuilder emojiCollector = new StringBuilder();
 
-            await foreach (var token in _chatClient.StreamAsync(systemPrompt, userInput))
+            await foreach (string token in _chatClient.StreamAsync(systemPrompt, userInput))
             {
                 EmojiUtils.ExtractEmojis(token, out string cleaned, out string emojis);
 
-                if (!string.IsNullOrEmpty(cleaned))
+                bool hasCleanedContent = !string.IsNullOrEmpty(cleaned);
+                if (hasCleanedContent)
                 {
                     sb.Append(cleaned);
                     yield return cleaned;
                 }
 
-                if (!string.IsNullOrEmpty(emojis))
+                bool hasEmojis = !string.IsNullOrEmpty(emojis);
+                if (hasEmojis)
                 {
                     emojiCollector.Append(emojis);
                     OnTokenReceived?.Invoke(emojis);
@@ -95,16 +113,69 @@ namespace Alissa.Core.Services
             _sessionManager.SaveSession(_currentSession);
             _memoryManager.SaveSessionCache(_currentSession.Messages);
 
-            var hasThoughtService = _thoughtService != null;
+            bool hasThoughtService = _thoughtService != null;
             if (hasThoughtService)
             {
                 _ = FireAndForgetThoughtGeneration(userInput);
+            }
+
+            bool hasTextToSpeech = _textToSpeechService != null;
+            if (hasTextToSpeech)
+            {
+                _ = FireAndForgetAudioSynthesis(response);
+            }
+        }
+
+        private async Task FireAndForgetAudioSynthesis(string response)
+        {
+            bool hasTextToSpeechService = _textToSpeechService != null;
+
+            if (!hasTextToSpeechService)
+            {
+                return;
+            }
+
+            try
+            {
+                byte[] audioData = await _textToSpeechService!.SynthesizeAsync(response).ConfigureAwait(false);
+
+                bool hasAudioData = audioData.Length > 0;
+                if (hasAudioData)
+                {
+                    OnAudioReady?.Invoke(audioData);
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorHandler.Handle(ex, null, false);
+            }
+        }
+
+        /// <summary>
+        /// Transcribes audio to text and streams the response.
+        /// Delegates to StreamAsync after converting audio to text.
+        /// </summary>
+        public async IAsyncEnumerable<string> StreamFromAudioAsync(byte[] audioBytes, string format)
+        {
+            bool speechToTextAvailable = _speechToTextService != null;
+            {
+                if (!speechToTextAvailable)
+                {
+                    throw new InvalidOperationException("Speech-to-text service is not configured");
+                }
+            }
+
+            string userInput = await _speechToTextService!.TranscribeAsync(audioBytes, format).ConfigureAwait(false);
+
+            await foreach (string token in StreamAsync(userInput))
+            {
+                yield return token;
             }
         }
 
         private async Task FireAndForgetThoughtGeneration(string userInput)
         {
-            var hasThoughtService = _thoughtService != null;
+            bool hasThoughtService = _thoughtService != null;
 
             if (!hasThoughtService)
             {
@@ -113,12 +184,33 @@ namespace Alissa.Core.Services
 
             try
             {
-                var thought = await _thoughtService.GenerateThoughtAsync(userInput, _currentSession.Messages);
-                var hasThought = !string.IsNullOrEmpty(thought);
+                // Check if we captured native thinking from the model
+                bool thinkingCaptured = false;
+                string thinkingText = string.Empty;
 
-                if (hasThought)
+                IThinkingCapable? thinkingClient = _chatClient as IThinkingCapable;
+                bool hasThinkingCapability = thinkingClient != null;
+                if (hasThinkingCapability)
                 {
-                    await _thoughtService.StoreThoughtAsync(thought, "session_reflection");
+                    thinkingText = thinkingClient!.LastThinkingText;
+                    thinkingCaptured = !string.IsNullOrEmpty(thinkingText);
+                }
+
+                // If we captured thinking, store it and skip redundant generation
+                if (thinkingCaptured)
+                {
+                    await _thoughtService.StoreThoughtAsync(thinkingText, THOUGHT_CATEGORY);
+                }
+                else
+                {
+                    // Fall back to generating thought via separate model call
+                    string thought = await _thoughtService.GenerateThoughtAsync(userInput, _currentSession.Messages);
+                    bool hasThought = !string.IsNullOrEmpty(thought);
+
+                    if (hasThought)
+                    {
+                        await _thoughtService.StoreThoughtAsync(thought, THOUGHT_CATEGORY);
+                    }
                 }
             }
             catch (Exception ex)
@@ -137,13 +229,20 @@ namespace Alissa.Core.Services
         /// </summary>
         public IPromptBuilder PromptBuilder => _promptBuilder;
 
-        private string BuildSystemPrompt(string currentUserInput = "")
-        {
-            var promptBuilderTyped = _promptBuilder as PromptBuilder;
+        /// <summary>
+        /// Gets the speech-to-text service (if enabled).
+        /// </summary>
+        public ISpeechToTextService? SpeechToTextService => _speechToTextService;
 
-            if (promptBuilderTyped != null)
+        private async Task<string> BuildSystemPromptAsync(string currentUserInput = "")
+        {
+            PromptBuilder? promptBuilderTyped = _promptBuilder as PromptBuilder;
+
+            bool isPromptBuilder = promptBuilderTyped != null;
+            if (isPromptBuilder)
             {
-                return promptBuilderTyped.BuildSystemPromptWithContext(_currentSession.Messages, currentUserInput);
+                string result = await promptBuilderTyped.BuildSystemPromptWithContextAsync(_currentSession.Messages, currentUserInput);
+                return result;
             }
 
             return _promptBuilder.BuildSystemPrompt();

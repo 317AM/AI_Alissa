@@ -68,5 +68,75 @@
     "Timestamp": "2026-06-13T22:25:02.6883862+02:00",
     "Relevance": 0.8,
     "IsCoreMemory": false
+  },
+  {
+    "Key": "topic",
+    "Value": "Ongoing C#/.NET work, assistance request, and AI late-night habits",
+    "Timestamp": "2026-09-10T17:51:19.0136168+02:00",
+    "Relevance": 0.8,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "topic",
+    "Value": "website issue persists, C# near-solution, LLM activity warning",
+    "Timestamp": "2026-09-10T17:58:11.3350005+02:00",
+    "Relevance": 0.8,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "topic",
+    "Value": "TTS/STT integration discussion",
+    "Timestamp": "2026-09-10T19:13:08.310036+02:00",
+    "Relevance": 0.8,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "no_roleplay",
+    "Value": "Text-based, literal output only",
+    "Timestamp": "2026-09-10T19:13:08.3113168+02:00",
+    "Relevance": 0.8,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "language_preference",
+    "Value": "C# preferred over Python",
+    "Timestamp": "2026-09-10T19:13:08.3178588+02:00",
+    "Relevance": 0.8,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "topic",
+    "Value": "Speech-to-text configuration, C# preference over Python, LLM overuse warnings",
+    "Timestamp": "2026-09-10T19:16:51.5056503+02:00",
+    "Relevance": 0.8,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "topic",
+    "Value": "Speech-to-text (STT) setup is misconfigured; STT key location debated",
+    "Timestamp": "2026-09-10T19:22:09.0269803+02:00",
+    "Relevance": 0.8,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "topic",
+    "Value": "Speech-to-text config issues linked to Python-specific settings",
+    "Timestamp": "2026-09-10T19:39:01.829749+02:00",
+    "Relevance": 0.8,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "topic",
+    "Value": "Completed Piper Amy TTS configuration with speed/pitch adjustments; encountered model degradation and PC performance limitations",
+    "Timestamp": "2026-09-10T19:55:42.2475114+02:00",
+    "Relevance": 0.8,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "topic",
+    "Value": "Model status (napping without tail flicks), C# config adjustments for voice tuning, deferred discussion",
+    "Timestamp": "2026-09-13T15:51:07.3173233+02:00",
+    "Relevance": 0.8,
+    "IsCoreMemory": false
   }
 ]

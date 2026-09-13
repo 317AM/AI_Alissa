@@ -47,5 +47,15 @@ namespace Alissa.Core.Models
         /// Logging configuration.
         /// </summary>
         public LoggingModel Logging { get; set; } = new();
+
+        /// <summary>
+        /// Speech-to-text and text-to-speech configuration.
+        /// </summary>
+        public SpeechConfig Speech { get; set; } = new();
+
+        /// <summary>
+        /// HTTP API configuration.
+        /// </summary>
+        public ApiConfig Api { get; set; } = new();
     }
 }

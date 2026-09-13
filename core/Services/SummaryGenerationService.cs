@@ -12,6 +12,16 @@ namespace Alissa.Core.Services
     /// </summary>
     public class SummaryGenerationService
     {
+        // Constants
+        private const string EMPTY_CONTENT_MSG = "No conversation content to summarize.";
+        private const string SUMMARY_PROMPT_FORMAT = "Summarize the following conversation in approximately {0} lines. Focus on key topics, decisions, and important information. Be concise and extract the essence:\n\n";
+        private const string HIGHLIGHT_PROMPT_FORMAT = "Extract {0} key highlights or important points from the following conversation. List them as bullet points:\n\n";
+        private const string TOPIC_PROMPT = "Identify the main topics discussed in the following conversation. List them as comma-separated words:\n\n";
+        private const string HIGHLIGHT_SEPARATORS = "\n-•*";
+        private const string TOPIC_SEPARATORS = ",;\n";
+        private const int MIN_HIGHLIGHT_LENGTH = 5;
+        private const int MIN_TOPIC_LENGTH = 2;
+
         private readonly IChatClient _chatClient;
         private readonly IPromptBuilder _promptBuilder;
 
@@ -30,26 +40,25 @@ namespace Alissa.Core.Services
         /// <returns>Generated summary</returns>
         public async Task<string> GenerateSummaryAsync(string conversationText, int desiredLength = 5)
         {
-            if (string.IsNullOrWhiteSpace(conversationText))
+            bool isEmpty = string.IsNullOrWhiteSpace(conversationText);
+            if (isEmpty)
             {
-                return "No conversation content to summarize.";
+                return EMPTY_CONTENT_MSG;
             }
 
-            string summaryPrompt = $"Summarize the following conversation in approximately {desiredLength} lines. " +
-                "Focus on key topics, decisions, and important information. " +
-                "Be concise and extract the essence:\n\n";
-
+            string summaryPrompt = string.Format(SUMMARY_PROMPT_FORMAT, desiredLength);
             string fullPrompt = summaryPrompt + conversationText;
             string systemPrompt = _promptBuilder.BuildSystemPrompt();
 
-            var sb = new System.Text.StringBuilder();
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
 
-            await foreach (var token in _chatClient.StreamAsync(systemPrompt, fullPrompt))
+            await foreach (string token in _chatClient.StreamAsync(systemPrompt, fullPrompt))
             {
                 sb.Append(token);
             }
 
-            return sb.ToString().Trim();
+            string result = sb.ToString().Trim();
+            return result;
         }
 
         /// <summary>
@@ -60,25 +69,25 @@ namespace Alissa.Core.Services
         /// <returns>List of key highlights</returns>
         public async Task<List<string>> GenerateHighlightsAsync(string conversationText, int highlightCount = 5)
         {
-            if (string.IsNullOrWhiteSpace(conversationText))
+            bool isEmpty = string.IsNullOrWhiteSpace(conversationText);
+            if (isEmpty)
             {
                 return new List<string>();
             }
 
-            string highlightPrompt = $"Extract {highlightCount} key highlights or important points from the following conversation. " +
-                "List them as bullet points:\n\n";
-
+            string highlightPrompt = string.Format(HIGHLIGHT_PROMPT_FORMAT, highlightCount);
             string fullPrompt = highlightPrompt + conversationText;
             string systemPrompt = _promptBuilder.BuildSystemPrompt();
 
-            var sb = new System.Text.StringBuilder();
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
 
-            await foreach (var token in _chatClient.StreamAsync(systemPrompt, fullPrompt))
+            await foreach (string token in _chatClient.StreamAsync(systemPrompt, fullPrompt))
             {
                 sb.Append(token);
             }
 
-            return ParseHighlights(sb.ToString(), highlightCount);
+            List<string> result = ParseHighlights(sb.ToString(), highlightCount);
+            return result;
         }
 
         /// <summary>
@@ -88,46 +97,50 @@ namespace Alissa.Core.Services
         /// <returns>List of identified topics</returns>
         public async Task<List<string>> GenerateTopicsAsync(string conversationText)
         {
-            if (string.IsNullOrWhiteSpace(conversationText))
+            bool isEmpty = string.IsNullOrWhiteSpace(conversationText);
+            if (isEmpty)
             {
                 return new List<string>();
             }
 
-            string topicPrompt = "Identify the main topics discussed in the following conversation. " +
-                "List them as comma-separated words:\n\n";
-
+            string topicPrompt = TOPIC_PROMPT;
             string fullPrompt = topicPrompt + conversationText;
             string systemPrompt = _promptBuilder.BuildSystemPrompt();
 
-            var sb = new System.Text.StringBuilder();
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
 
-            await foreach (var token in _chatClient.StreamAsync(systemPrompt, fullPrompt))
+            await foreach (string token in _chatClient.StreamAsync(systemPrompt, fullPrompt))
             {
                 sb.Append(token);
             }
 
-            return ParseTopics(sb.ToString());
+            List<string> result = ParseTopics(sb.ToString());
+            return result;
         }
 
         private static List<string> ParseHighlights(string highlightsText, int expectedCount)
         {
-            var highlights = new List<string>();
+            List<string> highlights = new List<string>();
 
-            if (string.IsNullOrWhiteSpace(highlightsText))
+            bool isEmpty = string.IsNullOrWhiteSpace(highlightsText);
+            if (isEmpty)
             {
                 return highlights;
             }
 
-            var lines = highlightsText.Split(new[] { "\n", "-", "•", "*" }, StringSplitOptions.RemoveEmptyEntries);
+            char[] separatorArray = HIGHLIGHT_SEPARATORS.ToCharArray();
+            string[] lines = highlightsText.Split(separatorArray, StringSplitOptions.RemoveEmptyEntries);
 
-            foreach (var line in lines)
+            for (int i = 0; i < lines.Length; i++)
             {
-                string cleaned = line.Trim();
-                if (!string.IsNullOrWhiteSpace(cleaned) && cleaned.Length > 5)
+                string cleaned = lines[i].Trim();
+                bool isValid = !string.IsNullOrWhiteSpace(cleaned) && cleaned.Length > MIN_HIGHLIGHT_LENGTH;
+                if (isValid)
                 {
                     highlights.Add(cleaned);
 
-                    if (highlights.Count >= expectedCount)
+                    bool isEnough = highlights.Count >= expectedCount;
+                    if (isEnough)
                     {
                         break;
                     }
@@ -139,19 +152,22 @@ namespace Alissa.Core.Services
 
         private static List<string> ParseTopics(string topicsText)
         {
-            var topics = new List<string>();
+            List<string> topics = new List<string>();
 
-            if (string.IsNullOrWhiteSpace(topicsText))
+            bool isEmpty = string.IsNullOrWhiteSpace(topicsText);
+            if (isEmpty)
             {
                 return topics;
             }
 
-            var parts = topicsText.Split(new[] { ",", ";", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+            char[] separatorArray = TOPIC_SEPARATORS.ToCharArray();
+            string[] parts = topicsText.Split(separatorArray, StringSplitOptions.RemoveEmptyEntries);
 
-            foreach (var part in parts)
+            for (int i = 0; i < parts.Length; i++)
             {
-                string topic = part.Trim();
-                if (!string.IsNullOrWhiteSpace(topic) && topic.Length > 2)
+                string topic = parts[i].Trim();
+                bool isValid = !string.IsNullOrWhiteSpace(topic) && topic.Length > MIN_TOPIC_LENGTH;
+                if (isValid)
                 {
                     topics.Add(topic);
                 }

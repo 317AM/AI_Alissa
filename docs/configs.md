@@ -1,5 +1,18 @@
 ﻿# Config files
 
+(api.json):
+
+```
+{
+  "enabled": false,
+  "listenPort": 31700,
+  "allowedHosts": ["127.0.0.1", "::1"],
+  "sharedSecretHeader": "",
+  "maxRequestBodyBytes": 5242880
+}
+
+```
+
 (indexing_rules.json):
 
 ```
@@ -69,9 +82,11 @@
 ```
 {
   "ModelName": "qwen3:14b",
-  "MaxTokens": 2048,
+  "MaxTokens": 4096,
+  "Temperature": 0.7,
   "ResponseTimeoutSeconds": 60,
-  "KeepAliveMinutes": 30
+  "KeepAliveMinutes": 30,
+  "EnableThinking": true
 }
 
 ```
@@ -144,11 +159,13 @@
     "UserProfile",
     "Facts",
     "RecentContext",
+    "MediumTermMemory",
     "Skills",
+    "InternalNotes",
     "SystemLearnings",
     "SessionCache"
   ],
-  "includeMediumTermMemory": false,
+  "includeMediumTermMemory": true,
   "includePersonaFields": true,
   "tokensPerLine": 4
 }
@@ -162,6 +179,23 @@
   "EnableSummaries": true,
   "EnableEmojiLogging": true,
   "AutoRepairOnStart": true
+}
+
+```
+
+(speech.json):
+
+```
+{
+  "sttEnabled": false,
+  "whisperBinaryPath": "",
+  "whisperModelPath": "",
+  "language": "en",
+  "ttsEnabled": false,
+  "piperBinaryPath": "",
+  "piperVoiceModelPath": "",
+  "outputSampleFormat": "wav",
+  "tempDirectory": "temp/audio"
 }
 
 ```

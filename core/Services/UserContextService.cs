@@ -10,6 +10,13 @@ namespace Alissa.Core.Services
     /// </summary>
     public class UserContextService : IUserContextService
     {
+        // Constants
+        private const string CONFIG_DIR = "config";
+        private const string USER_CONTEXT_FILE = "user_context.json";
+        private const string MANUAL_OVERRIDE_KEY = "manual_override";
+        private const string USER_NAME_KEY = "user_name";
+        private const string DEFAULT_USER_NAME = "User";
+
         private readonly string _basePath;
         private string? _manualUserOverride;
         private Dictionary<string, object> _userContext;
@@ -41,8 +48,8 @@ namespace Alissa.Core.Services
             if (isValid)
             {
                 _manualUserOverride = userName;
-                _userContext["manual_override"] = true;
-                _userContext["user_name"] = userName;
+                _userContext[MANUAL_OVERRIDE_KEY] = true;
+                _userContext[USER_NAME_KEY] = userName;
                 await PersistUserContext();
             }
 
@@ -52,13 +59,14 @@ namespace Alissa.Core.Services
         public async Task ClearManualUserAsync()
         {
             _manualUserOverride = null;
-            _userContext.Remove("manual_override");
+            _userContext.Remove(MANUAL_OVERRIDE_KEY);
             await PersistUserContext();
         }
 
         public async Task<Dictionary<string, object>> GetUserContextAsync()
         {
-            return await Task.FromResult(new Dictionary<string, object>(_userContext));
+            Dictionary<string, object> contextCopy = new Dictionary<string, object>(_userContext);
+            return await Task.FromResult(contextCopy);
         }
 
         public async Task SetUserContextAsync(Dictionary<string, object> context)
@@ -76,13 +84,13 @@ namespace Alissa.Core.Services
         private string DetectSystemUser()
         {
             string? userName = Environment.UserName;
-            string defaultName = !string.IsNullOrEmpty(userName) ? userName : "User";
-            return defaultName;
+            string result = !string.IsNullOrEmpty(userName) ? userName : DEFAULT_USER_NAME;
+            return result;
         }
 
         private void LoadUserContext()
         {
-            string contextPath = Path.Combine(_basePath, "config", "user_context.json");
+            string contextPath = Path.Combine(_basePath, CONFIG_DIR, USER_CONTEXT_FILE);
             bool fileExists = File.Exists(contextPath);
 
             if (fileExists)
@@ -90,16 +98,18 @@ namespace Alissa.Core.Services
                 try
                 {
                     string json = File.ReadAllText(contextPath);
-                    var loaded = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+                    Dictionary<string, object>? loaded = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(json);
 
-                    if (loaded != null)
+                    bool loadedValid = loaded != null;
+                    if (loadedValid)
                     {
                         _userContext = loaded;
 
-                        bool hasManualOverride = _userContext.ContainsKey("user_name") && _userContext.ContainsKey("manual_override");
+                        bool hasManualOverride = _userContext.ContainsKey(USER_NAME_KEY) && _userContext.ContainsKey(MANUAL_OVERRIDE_KEY);
                         if (hasManualOverride)
                         {
-                            _manualUserOverride = _userContext["user_name"]?.ToString();
+                            object? userNameObj = _userContext[USER_NAME_KEY];
+                            _manualUserOverride = userNameObj?.ToString();
                         }
                     }
                 }
@@ -112,10 +122,15 @@ namespace Alissa.Core.Services
 
         private async Task PersistUserContext()
         {
-            string contextPath = Path.Combine(_basePath, "config", "user_context.json");
-            Directory.CreateDirectory(Path.GetDirectoryName(contextPath)!);
+            string contextPath = Path.Combine(_basePath, CONFIG_DIR, USER_CONTEXT_FILE);
+            string? directory = Path.GetDirectoryName(contextPath);
+            if (directory != null)
+            {
+                Directory.CreateDirectory(directory);
+            }
 
-            string json = System.Text.Json.JsonSerializer.Serialize(_userContext, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+            System.Text.Json.JsonSerializerOptions options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
+            string json = System.Text.Json.JsonSerializer.Serialize(_userContext, options);
             await File.WriteAllTextAsync(contextPath, json);
         }
     }

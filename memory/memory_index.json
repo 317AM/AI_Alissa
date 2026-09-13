@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "LastBuiltUtc": "2026-06-13T20:25:02.7332948Z",
+  "LastBuiltUtc": "2026-09-13T13:51:07.3678438Z",
   "Entries": {
     "UserProfile_user_name": {
       "Key": "user_name",
@@ -12,25 +12,11 @@
         "jackson"
       ]
     },
-    "UserProfile_background": {
-      "Key": "background",
-      "Category": "UserProfile",
-      "Relevance": 0.9,
-      "Timestamp": "2026-06-13T17:49:46.8991667+02:00",
-      "IsCoreMemory": false,
-      "Tags": [
-        "initial",
-        "interaction",
-        "focused",
-        "coding/technical",
-        "topics"
-      ]
-    },
     "UserProfile_name": {
       "Key": "name",
       "Category": "UserProfile",
       "Relevance": 0.9,
-      "Timestamp": "2026-06-13T22:25:02.6585591+02:00",
+      "Timestamp": "2026-09-13T15:51:07.3012953+02:00",
       "IsCoreMemory": false,
       "Tags": [
         "jackson"
@@ -40,161 +26,214 @@
       "Key": "preference_style",
       "Category": "UserProfile",
       "Relevance": 0.9,
-      "Timestamp": "2026-06-13T22:25:02.6631293+02:00",
+      "Timestamp": "2026-09-13T15:51:07.3036809+02:00",
       "IsCoreMemory": false,
       "Tags": [
-        "prefers",
-        "python/javascript"
+        "concise",
+        "direct",
+        "communication",
+        "technical",
+        "focus"
       ]
     },
     "UserProfile_goal": {
       "Key": "goal",
       "Category": "UserProfile",
       "Relevance": 0.9,
-      "Timestamp": "2026-06-13T22:25:02.6755858+02:00",
+      "Timestamp": "2026-09-13T15:51:07.3098389+02:00",
       "IsCoreMemory": false,
       "Tags": [
         "discuss",
-        "programming",
-        "language",
-        "merits",
-        "technical",
-        "trade-offs"
+        "voice",
+        "tuning",
+        "system",
+        "configuration"
       ]
     },
-    "Fact_topic": {
-      "Key": "topic",
+    "Fact_no_roleplay": {
+      "Key": "no_roleplay",
       "Category": "Fact",
       "Relevance": 0.8,
-      "Timestamp": "2026-06-13T17:49:46.9080825+02:00",
+      "Timestamp": "2026-09-10T19:13:08.3113168+02:00",
       "IsCoreMemory": false,
       "Tags": [
-        "optimizations",
-        "technical",
-        "depth",
-        "discussion"
+        "text-based",
+        "literal",
+        "output"
       ]
     },
-    "Fact_math_game": {
-      "Key": "math_game",
+    "Fact_language_preference": {
+      "Key": "language_preference",
       "Category": "Fact",
       "Relevance": 0.8,
-      "Timestamp": "2026-06-13T21:49:33.2189192+02:00",
-      "IsCoreMemory": false,
-      "Tags": [
-        "solved",
-        "puzzles",
-        "corrected",
-        "alissa\u0027s",
-        "number",
-        "choices",
-        "during"
-      ]
-    },
-    "Fact_list_reversal": {
-      "Key": "list_reversal",
-      "Category": "Fact",
-      "Relevance": 0.8,
-      "Timestamp": "2026-06-13T21:49:33.2246437+02:00",
-      "IsCoreMemory": false,
-      "Tags": [
-        "requested",
-        "reversal",
-        "starting"
-      ]
-    },
-    "Fact_description": {
-      "Key": "description",
-      "Category": "Fact",
-      "Relevance": 0.8,
-      "Timestamp": "2026-06-13T22:25:02.6883862+02:00",
+      "Timestamp": "2026-09-10T19:13:08.3178588+02:00",
       "IsCoreMemory": false,
       "Tags": [
         "preferred",
-        "python/javascript",
-        "hardware",
-        "limitations",
-        "affect",
-        "resource-heavy",
-        "tasks"
+        "python"
       ]
     },
-    "Skill_technique": {
-      "Key": "technique",
+    "Skill_Code critique": {
+      "Key": "Code critique",
       "Category": "Skill",
-      "Relevance": 0.85,
-      "Timestamp": "2026-06-13T17:49:46.9095151+02:00",
+      "Relevance": 0.11498456113719753,
+      "Timestamp": "2026-07-28T20:06:30.9439266+02:00",
       "IsCoreMemory": false,
       "Tags": [
-        "challenging",
-        "assumptions",
+        "expressing",
+        "preference",
+        "python",
         "playful",
+        "warnings",
+        "about"
+      ]
+    },
+    "Skill_Humor in technical discussions": {
+      "Key": "Humor in technical discussions",
+      "Category": "Skill",
+      "Relevance": 0.11498456113719753,
+      "Timestamp": "2026-07-28T20:06:30.9451135+02:00",
+      "IsCoreMemory": false,
+      "Tags": [
+        "using",
         "teasing",
-        "curiosity-driven",
-        "questioning"
-      ]
-    },
-    "Skill_problem_solving": {
-      "Key": "problem_solving",
-      "Category": "Skill",
-      "Relevance": 0.85,
-      "Timestamp": "2026-06-13T21:49:33.2327503+02:00",
-      "IsCoreMemory": false,
-      "Tags": [
-        "demonstrated",
-        "ability",
-        "solve",
-        "puzzles",
-        "correct"
-      ]
-    },
-    "Skill_code_handling": {
-      "Key": "code_handling",
-      "Category": "Skill",
-      "Relevance": 0.85,
-      "Timestamp": "2026-06-13T21:49:33.2346352+02:00",
-      "IsCoreMemory": false,
-      "Tags": [
-        "requested",
-        "specific",
-        "tasks",
-        "reversal)",
-        "received"
-      ]
-    },
-    "Skill_description": {
-      "Key": "description",
-      "Category": "Skill",
-      "Relevance": 0.85,
-      "Timestamp": "2026-06-13T22:25:02.7011223+02:00",
-      "IsCoreMemory": false,
-      "Tags": [
-        "blending",
-        "humor",
-        "quality",
+        "personality-driven",
         "critiques",
-        "mocking",
-        "python/javascript"
+        "during",
+        "code-related",
+        "conversations"
       ]
     },
-    "SystemLearning_improvement": {
-      "Key": "improvement",
-      "Category": "SystemLearning",
-      "Relevance": 0.95,
-      "Timestamp": "2026-06-13T17:49:46.9239479+02:00",
+    "f239c2aa-484c-4954-8354-645723d93d6e_medium": {
+      "Key": "f239c2aa-484c-4954-8354-645723d93d6e",
+      "Category": "MediumTermMemory",
+      "Relevance": 0.11498456113719753,
+      "Timestamp": "2026-07-28T18:06:30.9893033Z",
       "IsCoreMemory": false,
       "Tags": [
-        "balance",
-        "humor",
-        "technical",
-        "clarity",
-        "refine",
-        "challenge-specific",
-        "prompts"
+        "fixes",
+        "memory",
+        "TTS",
+        "STT",
+        "StyleTTS2",
+        "Python"
+      ]
+    },
+    "e546c8b0-c69d-4b1b-bf73-ad970561c553_medium": {
+      "Key": "e546c8b0-c69d-4b1b-bf73-ad970561c553",
+      "Category": "MediumTermMemory",
+      "Relevance": 0.85,
+      "Timestamp": "2026-09-10T15:51:19.0315667Z",
+      "IsCoreMemory": false,
+      "Tags": [
+        "Website",
+        "ASP.NET",
+        "Backend",
+        "LLM"
+      ]
+    },
+    "61eef0cd-1f78-4bd0-bf6c-8ceabbc6bce3_medium": {
+      "Key": "61eef0cd-1f78-4bd0-bf6c-8ceabbc6bce3",
+      "Category": "MediumTermMemory",
+      "Relevance": 0.85,
+      "Timestamp": "2026-09-10T15:58:11.3507915Z",
+      "IsCoreMemory": false,
+      "Tags": [
+        "LLM",
+        "playful interaction",
+        "technical troubleshooting."
+      ]
+    },
+    "98ac530a-a98a-4789-9c2a-b0788b62c600_medium": {
+      "Key": "98ac530a-a98a-4789-9c2a-b0788b62c600",
+      "Category": "MediumTermMemory",
+      "Relevance": 0.85,
+      "Timestamp": "2026-09-10T17:13:08.3457997Z",
+      "IsCoreMemory": false,
+      "Tags": [
+        "website",
+        "Python",
+        "text-based",
+        "roleplay",
+        "code chat",
+        "refactoring",
+        "architecture"
+      ]
+    },
+    "e60e319a-2acc-4d49-9310-dcd489f14ba9_medium": {
+      "Key": "e60e319a-2acc-4d49-9310-dcd489f14ba9",
+      "Category": "MediumTermMemory",
+      "Relevance": 0.85,
+      "Timestamp": "2026-09-10T17:16:51.5216231Z",
+      "IsCoreMemory": false,
+      "Tags": [
+        "coding",
+        "configuration",
+        "speech-to-text",
+        "Python",
+        "refactoring",
+        "nickname",
+        "playful interaction"
+      ]
+    },
+    "5a399635-4aac-4492-b12f-cdf4cac95eb6_medium": {
+      "Key": "5a399635-4aac-4492-b12f-cdf4cac95eb6",
+      "Category": "MediumTermMemory",
+      "Relevance": 0.85,
+      "Timestamp": "2026-09-10T17:22:09.0424458Z",
+      "IsCoreMemory": false,
+      "Tags": [
+        "coding",
+        "speech-to-text",
+        "configuration",
+        "refactoring",
+        "catgirl banter"
+      ]
+    },
+    "e59d94b1-f1c3-42e5-bed0-bb3b3ee9f3d1_medium": {
+      "Key": "e59d94b1-f1c3-42e5-bed0-bb3b3ee9f3d1",
+      "Category": "MediumTermMemory",
+      "Relevance": 0.85,
+      "Timestamp": "2026-09-10T17:39:01.8447991Z",
+      "IsCoreMemory": false,
+      "Tags": [
+        "config",
+        "speech-to-text",
+        "Python",
+        "refactoring",
+        "configuration tweaks"
+      ]
+    },
+    "19c5bf5c-556e-4398-8b82-ac8218d3231d_medium": {
+      "Key": "19c5bf5c-556e-4398-8b82-ac8218d3231d",
+      "Category": "MediumTermMemory",
+      "Relevance": 0.85,
+      "Timestamp": "2026-09-10T17:55:42.2695495Z",
+      "IsCoreMemory": false,
+      "Tags": [
+        "TTS configuration",
+        "speed/pitch adjustment",
+        "model degradation",
+        "PC performance",
+        "simplified responses."
+      ]
+    },
+    "3d7d0e7d-4ac0-4639-9d82-051c44c80a56_medium": {
+      "Key": "3d7d0e7d-4ac0-4639-9d82-051c44c80a56",
+      "Category": "MediumTermMemory",
+      "Relevance": 0.85,
+      "Timestamp": "2026-09-13T13:51:07.3651509Z",
+      "IsCoreMemory": false,
+      "Tags": [
+        "Conversation topics: checking responsiveness",
+        "model status",
+        "voice tuning",
+        "configuration adjustments",
+        "ending conversation."
       ]
     }
   },
-  "TotalMemories": 15,
+  "TotalMemories": 28,
   "AllTags": [
     "jackson",
     "initial",
@@ -202,14 +241,16 @@
     "focused",
     "coding/technical",
     "topics",
-    "prefers",
-    "python/javascript",
-    "discuss",
-    "programming",
-    "language",
-    "merits",
+    "concise",
+    "direct",
+    "communication",
     "technical",
-    "trade-offs",
+    "focus",
+    "discuss",
+    "voice",
+    "tuning",
+    "system",
+    "configuration",
     "alissa",
     "memory",
     "limitations",
@@ -248,11 +289,54 @@
     "requested",
     "reversal",
     "starting",
+    "programming",
     "languages",
+    "python/javascript",
     "hardware",
     "affect",
     "resource-heavy",
     "tasks",
+    "ongoing",
+    "assistance",
+    "request",
+    "late-night",
+    "habits",
+    "website",
+    "issue",
+    "persists",
+    "near-solution",
+    "activity",
+    "warning",
+    "tts/stt",
+    "integration",
+    "text-based",
+    "literal",
+    "output",
+    "python",
+    "speech-to-text",
+    "preference",
+    "overuse",
+    "warnings",
+    "(stt)",
+    "setup",
+    "misconfigured",
+    "location",
+    "debated",
+    "config",
+    "issues",
+    "linked",
+    "python-specific",
+    "settings",
+    "completed",
+    "piper",
+    "speed/pitch",
+    "adjustments",
+    "encountered",
+    "model",
+    "status",
+    "(napping",
+    "without",
+    "flicks)",
     "challenging",
     "assumptions",
     "playful",
@@ -284,6 +368,36 @@
     "quality",
     "critiques",
     "mocking",
+    "using",
+    "personality-driven",
+    "code-related",
+    "conversations",
+    "balancing",
+    "curiosity/teasing",
+    "casual",
+    "conversation",
+    "humor-balanced",
+    "guidance",
+    "references",
+    "expertise",
+    "roleplay",
+    "avoidance",
+    "maintenance",
+    "code-centric",
+    "banter",
+    "stability",
+    "probing",
+    "details",
+    "preferences",
+    "guide",
+    "troubleshooting",
+    "c#-optimized",
+    "setups",
+    "engine",
+    "parameter",
+    "modulation",
+    "nonverbal",
+    "(meows)",
     "balance",
     "clarity",
     "refine",
@@ -303,15 +417,90 @@
     "async",
     "modular",
     "design",
-    "banter",
-    "guidance",
     "adapt",
     "mixed-topic",
-    "conversations",
     "align",
-    "preference",
     "acknowledge",
-    "constraints"
+    "constraints",
+    "approach",
+    "match",
+    "helpful",
+    "proactive",
+    "resolution",
+    "while",
+    "clarify",
+    "non-roleplay",
+    "reinforce",
+    "practical",
+    "actionable",
+    "advice",
+    "prioritize",
+    "responsiveness",
+    "creator\u0027s",
+    "context",
+    "avoid",
+    "workarounds",
+    "nickname",
+    "replies",
+    "precision",
+    "fixes",
+    "TTS",
+    "STT",
+    "StyleTTS2",
+    "ASP.NET",
+    "Backend",
+    "LLM",
+    "playful interaction",
+    "technical troubleshooting.",
+    "code chat",
+    "refactoring",
+    "architecture",
+    "catgirl banter",
+    "configuration tweaks",
+    "TTS configuration",
+    "speed/pitch adjustment",
+    "model degradation",
+    "PC performance",
+    "simplified responses.",
+    "Conversation topics: checking responsiveness",
+    "model status",
+    "voice tuning",
+    "configuration adjustments",
+    "ending conversation."
   ],
-  "AllTopics": []
+  "AllTopics": [
+    "fixes",
+    "memory",
+    "TTS",
+    "STT",
+    "StyleTTS2",
+    "Python",
+    "Website",
+    "ASP.NET",
+    "Backend",
+    "LLM",
+    "playful interaction",
+    "technical troubleshooting.",
+    "text-based",
+    "roleplay",
+    "code chat",
+    "refactoring",
+    "architecture",
+    "configuration",
+    "speech-to-text",
+    "nickname",
+    "catgirl banter",
+    "config",
+    "configuration tweaks",
+    "TTS configuration",
+    "speed/pitch adjustment",
+    "model degradation",
+    "PC performance",
+    "simplified responses.",
+    "Conversation topics: checking responsiveness",
+    "model status",
+    "voice tuning",
+    "configuration adjustments",
+    "ending conversation."
+  ]
 }

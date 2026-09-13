@@ -9,6 +9,9 @@ namespace Alissa.Core.Services
 {
     public class MemoryManager : IMemoryManager
     {
+        // Constants
+        private const int DEFAULT_MAX_ENTRIES = 10;
+
         private readonly MemoryStore _store;
         private readonly MemoryScorer _scorer;
         private readonly MemoryCompressor _compressor;
@@ -36,8 +39,9 @@ namespace Alissa.Core.Services
         // Fact Operations
         public void SaveMemory(MemoryEntry entry)
         {
-            var facts = _store.LoadFacts();
-            if (!facts.Any(f => f.Key == entry.Key && f.Value == entry.Value))
+            List<MemoryEntry> facts = _store.LoadFacts();
+            bool exists = facts.Any(f => f.Key == entry.Key && f.Value == entry.Value);
+            if (!exists)
             {
                 facts.Add(entry);
             }
@@ -57,10 +61,12 @@ namespace Alissa.Core.Services
         // User Profile Operations
         public void SaveUserProfile(MemoryEntry entry)
         {
-            var profile = _store.LoadUserProfile();
-            var existing = profile.FirstOrDefault(p => p.Key == entry.Key);
+            List<MemoryEntry> profile = _store.LoadUserProfile();
+            MemoryEntry? existing = profile.FirstOrDefault(p => p.Key == entry.Key);
             if (existing != null)
+            {
                 profile.Remove(existing);
+            }
             profile.Add(entry);
             _store.SaveUserProfile(profile);
         }
@@ -73,8 +79,9 @@ namespace Alissa.Core.Services
         // System Learning Operations
         public void SaveSystemLearning(MemoryEntry entry)
         {
-            var learnings = _store.LoadSystemLearnings();
-            if (!learnings.Any(l => l.Key == entry.Key && l.Value == entry.Value))
+            List<MemoryEntry> learnings = _store.LoadSystemLearnings();
+            bool exists = learnings.Any(l => l.Key == entry.Key && l.Value == entry.Value);
+            if (!exists)
             {
                 learnings.Add(entry);
             }
@@ -89,7 +96,7 @@ namespace Alissa.Core.Services
         // Conversation Summary Operations
         public void SaveConversationSummary(ConversationSummary summary)
         {
-            var summaries = _store.LoadConversationSummaries();
+            List<ConversationSummary> summaries = _store.LoadConversationSummaries();
             summaries.Add(summary);
             _store.SaveConversationSummaries(summaries);
         }
@@ -102,10 +109,12 @@ namespace Alissa.Core.Services
         // Skills Operations
         public void SaveSkill(MemoryEntry entry)
         {
-            var skills = _store.LoadSkills();
+            List<MemoryEntry> skills = _store.LoadSkills();
             bool exists = skills.Any(e => e.Key == entry.Key && e.Value == entry.Value);
             if (!exists)
+            {
                 skills.Add(entry);
+            }
             _store.SaveSkills(skills);
         }
 
@@ -117,51 +126,57 @@ namespace Alissa.Core.Services
         // Memory Retrieval Operations (with scoring/compression)
         public List<MemoryEntry> LoadMemory(string key = "")
         {
-            var facts = _store.LoadFacts();
-            var profile = _store.LoadUserProfile();
-            var learnings = _store.LoadSystemLearnings();
-            var skills = _store.LoadSkills();
+            List<MemoryEntry> facts = _store.LoadFacts();
+            List<MemoryEntry> profile = _store.LoadUserProfile();
+            List<MemoryEntry> learnings = _store.LoadSystemLearnings();
+            List<MemoryEntry> skills = _store.LoadSkills();
 
-            var all = facts.Concat(profile).Concat(learnings).Concat(skills).ToList();
+            List<MemoryEntry> all = facts.Concat(profile).Concat(learnings).Concat(skills).ToList();
 
-            if (!string.IsNullOrWhiteSpace(key))
-                return all.Where(e => e.Key == key).ToList();
+            bool hasKeyFilter = !string.IsNullOrWhiteSpace(key);
+            if (hasKeyFilter)
+            {
+                List<MemoryEntry> filtered = all.Where(e => e.Key == key).ToList();
+                return filtered;
+            }
 
             return all;
         }
 
         public List<MemoryEntry> GetRelevantMemory(int maxEntries)
         {
-            var all = LoadMemory();
-            var compressed = _compressor.EnforceCapacity(all);
-            return _scorer.ScoreAndRank(compressed, maxEntries);
+            List<MemoryEntry> all = LoadMemory();
+            List<MemoryEntry> compressed = _compressor.EnforceCapacity(all);
+            List<MemoryEntry> result = _scorer.ScoreAndRank(compressed, maxEntries);
+            return result;
         }
 
-        public List<MemoryEntry> LoadTopMemories(int count = 10)
+        public List<MemoryEntry> LoadTopMemories(int count = DEFAULT_MAX_ENTRIES)
         {
             return GetRelevantMemory(count);
         }
 
         public List<MemoryEntry> LoadContextMemory(int maxEntries, bool includeCore = true)
         {
-            var allMemory = LoadMemory();
-            return _scorer.GetContextMemory(allMemory, maxEntries, includeCore);
+            List<MemoryEntry> allMemory = LoadMemory();
+            List<MemoryEntry> result = _scorer.GetContextMemory(allMemory, maxEntries, includeCore);
+            return result;
         }
 
         public void SummarizeMemory()
         {
-            var all = LoadMemory();
+            List<MemoryEntry> all = LoadMemory();
             _compressor.CompressMemory(all);
 
-            var facts = all.Where(e => e.Key != null).ToList();
+            List<MemoryEntry> facts = all.Where(e => e.Key != null).ToList();
             _store.SaveFacts(facts);
         }
 
         public void DeleteMemory(string key)
         {
-            var facts = _store.LoadFacts().Where(e => e.Key != key).ToList();
-            var profile = _store.LoadUserProfile().Where(e => e.Key != key).ToList();
-            var learnings = _store.LoadSystemLearnings().Where(e => e.Key != key).ToList();
+            List<MemoryEntry> facts = _store.LoadFacts().Where(e => e.Key != key).ToList();
+            List<MemoryEntry> profile = _store.LoadUserProfile().Where(e => e.Key != key).ToList();
+            List<MemoryEntry> learnings = _store.LoadSystemLearnings().Where(e => e.Key != key).ToList();
 
             _store.SaveFacts(facts);
             _store.SaveUserProfile(profile);

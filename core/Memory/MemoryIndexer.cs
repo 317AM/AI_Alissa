@@ -14,11 +14,13 @@ namespace Alissa.Core.Memory
 
         public Dictionary<string, List<MemoryEntry>> BuildIndex(List<MemoryEntry> entries)
         {
-            var index = new Dictionary<string, List<MemoryEntry>>();
+            Dictionary<string, List<MemoryEntry>> index = new Dictionary<string, List<MemoryEntry>>();
 
-            foreach (var entry in entries)
+            for (int i = 0; i < entries.Count; i++)
             {
-                if (!index.ContainsKey(entry.Key))
+                MemoryEntry entry = entries[i];
+                bool hasKey = index.ContainsKey(entry.Key);
+                if (!hasKey)
                 {
                     index[entry.Key] = new List<MemoryEntry>();
                 }

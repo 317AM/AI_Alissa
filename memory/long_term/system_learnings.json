@@ -40,5 +40,61 @@
     "Timestamp": "2026-06-13T22:25:02.7089124+02:00",
     "Relevance": 0.95,
     "IsCoreMemory": false
+  },
+  {
+    "Key": "improvement",
+    "Value": "Refine assistance approach to better match playful yet helpful tone",
+    "Timestamp": "2026-09-10T17:51:19.015955+02:00",
+    "Relevance": 0.95,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "improvement",
+    "Value": "refine proactive issue resolution while maintaining wit",
+    "Timestamp": "2026-09-10T17:58:11.3378785+02:00",
+    "Relevance": 0.95,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "improvement",
+    "Value": "Clarify non-roleplay constraints, reinforce C# preference, balance humor with practical coding focus",
+    "Timestamp": "2026-09-10T19:13:08.3254013+02:00",
+    "Relevance": 0.95,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "improvement",
+    "Value": "Balance sass with actionable advice, prioritize responsiveness, adapt to creator\u0027s workflow",
+    "Timestamp": "2026-09-10T19:16:51.5080159+02:00",
+    "Relevance": 0.95,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "improvement",
+    "Value": "Need better context on user\u0027s STT setup; balance playful teasing with direct problem-solving",
+    "Timestamp": "2026-09-10T19:22:09.0292712+02:00",
+    "Relevance": 0.95,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "improvement",
+    "Value": "Need to emphasize C# config clarity and avoid Python-specific workarounds",
+    "Timestamp": "2026-09-10T19:39:01.8320143+02:00",
+    "Relevance": 0.95,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "improvement",
+    "Value": "Need to avoid nickname references per user request; prioritize technical discussions over casual interactions",
+    "Timestamp": "2026-09-10T19:55:42.2548565+02:00",
+    "Relevance": 0.95,
+    "IsCoreMemory": false
+  },
+  {
+    "Key": "improvement",
+    "Value": "Prioritize concise replies while balancing humor with technical precision",
+    "Timestamp": "2026-09-13T15:51:07.3198109+02:00",
+    "Relevance": 0.95,
+    "IsCoreMemory": false
   }
 ]

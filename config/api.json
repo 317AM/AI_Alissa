@@ -1,0 +1,7 @@
+{
+  "enabled": false,
+  "listenPort": 31700,
+  "allowedHosts": ["127.0.0.1", "::1"],
+  "sharedSecretHeader": "",
+  "maxRequestBodyBytes": 5242880
+}
